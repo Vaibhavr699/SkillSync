@@ -205,6 +205,7 @@ const CommentsSection = ({ resourceType, resourceId, compact = false }) => {
     const [replyContent, setReplyContent] = useState('');
     const [editContent, setEditContent] = useState(comment.content);
     const [showOptions, setShowOptions] = useState(false);
+    const [showReplies, setShowReplies] = useState(true);
 
     const handleReplySubmit = () => {
       if (!replyContent.trim()) return;
@@ -269,10 +270,20 @@ const CommentsSection = ({ resourceType, resourceId, compact = false }) => {
               </div>
             )}
             {comment.replies?.length > 0 && (
-              <div className="mt-2 space-y-3">
-                {comment.replies.map(reply => (
-                  <CommentItem key={reply._id} comment={reply} depth={depth + 1} onReply={onReply} onEdit={onEdit} onDelete={onDelete} user={user} />
-                ))}
+              <div className="mt-2">
+                <button
+                  onClick={() => setShowReplies(v => !v)}
+                  className="text-xs text-blue-600 hover:underline mb-2"
+                >
+                  {showReplies ? `Hide replies (${comment.replies.length})` : `Show replies (${comment.replies.length})`}
+                </button>
+                {showReplies && (
+                  <div className="space-y-3">
+                    {comment.replies.map(reply => (
+                      <CommentItem key={reply._id} comment={reply} depth={depth + 1} onReply={onReply} onEdit={onEdit} onDelete={onDelete} user={user} />
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>

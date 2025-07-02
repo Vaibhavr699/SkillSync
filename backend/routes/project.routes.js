@@ -5,7 +5,7 @@ const auth = require('../middleware/auth');
 const roles = require('../middleware/roles');
 const upload = require('../middleware/upload');
 const taskRoutes = require('./task.routes');
-const { getProjectComments, createProjectComment } = require('../controllers/comment.controller.js');
+const { getProjectComments, createProjectComment, deleteComment } = require('../controllers/comment.controller.js');
 
 router.post('/', auth, roles('company'), upload.array('files'), createProject);
 router.get('/', auth, getProjects);
@@ -22,5 +22,6 @@ router.patch('/:id/cancel', auth, roles('company'), cancelProject);
 router.use('/:projectId/tasks', taskRoutes);
 router.get('/:id/comments', auth, getProjectComments);
 router.post('/:id/comments', auth, createProjectComment);
+router.delete('/:id/comments/:commentId', auth, deleteComment);
 
 module.exports = router;

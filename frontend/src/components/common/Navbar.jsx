@@ -9,7 +9,7 @@ import { searchUsers } from '../../api/users';
 import api from '../../api/api';
 import { useThemeContext } from '../../context/ThemeContext';
 import { useState, useRef, useEffect } from 'react';
-import { FiSearch } from 'react-icons/fi';
+import { FiSearch, FiMenu, FiX } from 'react-icons/fi';
 
 let debounceTimeout;
 
@@ -47,6 +47,7 @@ const Navbar = () => {
   const inputRef = useRef();
   const { toggleTheme, mode } = useThemeContext();
   const isDark = mode === 'dark';
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Fetch all tags for tag filter
   useEffect(() => {
@@ -137,12 +138,15 @@ const Navbar = () => {
   };
 
   return (
-    <header className="w-full bg-white dark:bg-indigo-950 shadow-lg fixed top-0 left-0 z-30 h-16 flex items-center px-8 justify-between border-b border-indigo-200 dark:border-indigo-800">
+    <header className="w-full bg-white dark:bg-indigo-950 shadow-lg fixed top-0 left-0 z-30 h-16 flex items-center px-4 sm:px-8 justify-between border-b border-indigo-200 dark:border-indigo-800">
       <Link to="/dashboard" className="flex items-center gap-3 hover:opacity-80 transition-opacity cursor-pointer">
         <img src="/logo.svg" alt="SkillSync Logo" className="w-9 h-9 rounded-full shadow-md border-2 border-indigo-200 dark:border-indigo-700 bg-white" />
-        <span className="text-2xl font-extrabold text-indigo-900 dark:text-white tracking-tight font-sans drop-shadow">SkillSync</span>
+        <span className="text-xl sm:text-2xl font-extrabold text-indigo-900 dark:text-white tracking-tight font-sans drop-shadow">SkillSync</span>
       </Link>
-      <div className="flex-1 flex justify-center">
+      <button className="sm:hidden ml-auto p-2 rounded-full hover:bg-indigo-100 dark:hover:bg-indigo-800 transition" onClick={() => setMobileMenuOpen(v => !v)} aria-label="Open menu">
+        {mobileMenuOpen ? <FiX className="text-2xl text-indigo-900 dark:text-white" /> : <FiMenu className="text-2xl text-indigo-900 dark:text-white" />}
+      </button>
+      <div className="hidden sm:flex flex-1 justify-center">
         <form onSubmit={handleSubmit} className="relative w-full max-w-xl flex items-center">
           <input
             ref={inputRef}
@@ -259,13 +263,10 @@ const Navbar = () => {
           )}
         </form>
       </div>
-      <div className="flex items-center gap-4">
+      <div className="hidden sm:flex items-center gap-4">
         <NotificationsDropdown />
         <button
-          onClick={() => {
-            console.log('Theme toggle button clicked');
-            toggleTheme();
-          }}
+          onClick={toggleTheme}
           className="p-2 rounded-full hover:bg-indigo-100 dark:hover:bg-indigo-800 transition flex items-center justify-center border border-indigo-200 dark:border-indigo-700"
           aria-label="Toggle theme"
         >
@@ -296,6 +297,65 @@ const Navbar = () => {
           <Link to="/login" className="px-4 py-2 rounded-full bg-indigo-700 text-white font-semibold hover:bg-indigo-800 transition border border-indigo-800 shadow">Login</Link>
         )}
       </div>
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-40 bg-black bg-opacity-40 flex sm:hidden">
+          <div className="w-4/5 max-w-xs bg-white dark:bg-indigo-950 h-full shadow-xl flex flex-col p-6 gap-6 animate-slideInLeft">
+            <form onSubmit={handleSubmit} className="relative w-full flex items-center mb-4">
+              <input
+                ref={inputRef}
+                type="text"
+                className="w-full pl-5 pr-14 py-2.5 rounded-full border border-indigo-300 dark:border-indigo-700 bg-white dark:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-700 dark:focus:ring-indigo-400 text-base shadow transition placeholder:text-indigo-400 dark:placeholder:text-indigo-300 font-medium text-indigo-900 dark:text-white"
+                placeholder="Search users..."
+                value={search}
+                onChange={handleSearchChange}
+                onFocus={handleFocus}
+                autoComplete="off"
+                style={{ boxShadow: '0 2px 8px 0 rgba(80,56,200,0.08)' }}
+              />
+              <button
+                type="submit"
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-indigo-100 dark:hover:bg-indigo-800 transition"
+                aria-label="Search"
+              >
+                <FiSearch className="text-indigo-700 dark:text-white text-xl" />
+              </button>
+            </form>
+            <NotificationsDropdown />
+            <button
+              onClick={toggleTheme}
+              className="p-2 rounded-full hover:bg-indigo-100 dark:hover:bg-indigo-800 transition flex items-center justify-center border border-indigo-200 dark:border-indigo-700"
+              aria-label="Toggle theme"
+            >
+              {isDark ? (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12.79A9 9 0 1111.21 3a7 7 0 109.79 9.79z" />
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="2" fill="none" />
+                  <path stroke="currentColor" strokeWidth="2" strokeLinecap="round" d="M12 1v2m0 18v2m11-11h-2M3 12H1m16.95 6.95l-1.41-1.41M6.46 6.46L5.05 5.05m12.02 0l-1.41 1.41M6.46 17.54l-1.41 1.41" />
+                </svg>
+              )}
+            </button>
+            {user ? (
+              <Link to="/dashboard/profile" className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-100 dark:bg-indigo-800 hover:bg-indigo-200 dark:hover:bg-indigo-700 transition font-medium text-indigo-900 dark:text-white border border-indigo-200 dark:border-indigo-700">
+                <Avatar src={user.photo || '/logo.svg'} className="w-8 h-8" />
+                {user.role && (
+                  <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold ml-1 border ${roleBadgeStyles[user.role] || 'bg-indigo-200 text-indigo-900 border-indigo-300'}`}
+                    style={{ minWidth: 70, justifyContent: 'center' }}
+                  >
+                    {roleIcons[user.role]}
+                    {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                  </span>
+                )}
+              </Link>
+            ) : (
+              <Link to="/login" className="px-4 py-2 rounded-full bg-indigo-700 text-white font-semibold hover:bg-indigo-800 transition border border-indigo-800 shadow">Login</Link>
+            )}
+          </div>
+          <div className="flex-1" onClick={() => setMobileMenuOpen(false)} />
+        </div>
+      )}
     </header>
   );
 };

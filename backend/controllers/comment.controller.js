@@ -258,16 +258,41 @@ exports.deleteComment = async (req, res) => {
   try {
     const { projectId, commentId } = req.params;
     const userId = req.user.id;
-    // Check ownership and project association
-    const commentResult = await db.query(
-      'SELECT * FROM comments WHERE id = $1 AND parent_type = $2 AND parent_id = $3',
-      [commentId, 'project', projectId]
-    );
+    // Find the comment (could be top-level or any nested reply)
+    let commentResult = await db.query('SELECT * FROM comments WHERE id = $1', [commentId]);
     if (commentResult.rows.length === 0) return res.status(404).json({ message: 'Comment not found' });
-    if (commentResult.rows[0].author_id !== userId) return res.status(403).json({ message: 'Forbidden' });
-    // Delete attachments
+    let comment = commentResult.rows[0];
+    // Recursively find the top-level parent
+    let isProjectComment = false;
+    let current = comment;
+    while (current) {
+      if (current.parent_type === 'project' && String(current.parent_id) === String(projectId)) {
+        isProjectComment = true;
+        break;
+      } else if (current.parent_type === 'comment') {
+        const parentResult = await db.query('SELECT * FROM comments WHERE id = $1', [current.parent_id]);
+        if (parentResult.rows.length === 0) break;
+        current = parentResult.rows[0];
+      } else {
+        break;
+      }
+    }
+    if (!isProjectComment) return res.status(404).json({ message: 'Comment not found for this project' });
+    if (comment.author_id !== userId) return res.status(403).json({ message: 'Forbidden' });
+    // Helper: recursively delete all replies
+    async function deleteRepliesRecursive(parentId) {
+      const replies = await db.query('SELECT id FROM comments WHERE parent_type = $1 AND parent_id = $2', ['comment', parentId]);
+      for (const reply of replies.rows) {
+        await deleteRepliesRecursive(reply.id);
+        await db.query('DELETE FROM comment_files WHERE comment_id = $1', [reply.id]);
+        await db.query('DELETE FROM comments WHERE id = $1', [reply.id]);
+      }
+    }
+    // Delete all nested replies
+    await deleteRepliesRecursive(commentId);
+    // Delete attachments for this comment
     await db.query('DELETE FROM comment_files WHERE comment_id = $1', [commentId]);
-    // Delete comment
+    // Delete the comment itself
     await db.query('DELETE FROM comments WHERE id = $1', [commentId]);
     res.json({ message: 'Comment deleted' });
   } catch (err) {

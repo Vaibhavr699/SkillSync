@@ -280,7 +280,7 @@ const ProjectManagement = () => {
   }
 
   return (
-    <div className="min-h-screen w-full bg-gray-50 dark:bg-indigo-950 px-2 md:px-8 py-8 pt-17 mt-16 overflow-y-auto">
+    <div className="h-[calc(100vh-4rem)] w-full bg-gray-50 dark:bg-indigo-950 px-2 md:px-8 py-8 pt-17 mt-16 overflow-y-auto">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -339,45 +339,25 @@ const ProjectManagement = () => {
                 size="small"
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
-                className="w-64"
+                className="w-64 bg-white text-gray-900 dark:bg-[#23234f] dark:text-white rounded-lg focus:ring-2 focus:ring-indigo-500 border border-gray-200 dark:border-indigo-700"
                 InputProps={{
-                  style: { backgroundColor: 'inherit', color: 'inherit' },
+                  className: 'bg-white text-gray-900 dark:bg-[#23234f] dark:text-white',
                 }}
                 InputLabelProps={{
-                  style: { color: 'inherit' },
-                }}
-                sx={{
-                  bgcolor: { xs: '#fff', dark: '#23234f' },
-                  color: { xs: 'inherit', dark: '#fff' },
-                  borderColor: { xs: undefined, dark: '#3f3f7f' },
-                  '& .MuiOutlinedInput-root': {
-                    backgroundColor: { xs: '#fff', dark: '#23234f' },
-                    color: { xs: 'inherit', dark: '#fff' },
-                    '& fieldset': {
-                      borderColor: { xs: undefined, dark: '#3f3f7f' },
-                    },
-                    '&:hover fieldset': {
-                      borderColor: { xs: undefined, dark: '#6366f1' },
-                    },
-                    '&.Mui-focused fieldset': {
-                      borderColor: { xs: undefined, dark: '#6366f1' },
-                    },
-                  },
-                  input: { color: { xs: 'inherit', dark: '#fff' }, backgroundColor: { xs: '#fff', dark: '#23234f' } },
-                  label: { color: { xs: 'inherit', dark: '#fff' } },
+                  className: 'bg-white text-gray-900 dark:bg-[#23234f] dark:text-white',
                 }}
               />
-              <FormControl size="small" className="w-48" sx={{ bgcolor: { xs: '#fff', dark: '#23234f' }, color: { xs: 'inherit', dark: '#fff' } }}>
-                <InputLabel sx={{ color: { xs: 'inherit', dark: '#fff' }, backgroundColor: { xs: '#fff', dark: '#23234f' }, px: 0.5 }}>Status</InputLabel>
+              <FormControl size="small" className="w-48 bg-white text-gray-900 dark:bg-[#23234f] dark:text-white rounded-lg border border-gray-200 dark:border-indigo-700">
+                <InputLabel className="bg-white text-gray-900 dark:bg-[#23234f] dark:text-white">Status</InputLabel>
                 <Select
-          value={statusFilter}
+                  value={statusFilter}
                   label="Status"
                   onChange={e => setStatusFilter(e.target.value)}
-                  sx={{
-                    color: { xs: 'inherit', dark: '#fff' },
-                    backgroundColor: { xs: '#fff', dark: '#23234f' },
-                    '.MuiOutlinedInput-notchedOutline': { borderColor: { xs: undefined, dark: '#3f3f7f' } },
-                    '& .MuiSelect-select': { color: { xs: 'inherit', dark: '#fff' }, backgroundColor: { xs: '#fff', dark: '#23234f' } },
+                  className="bg-white text-gray-900 dark:bg-[#23234f] dark:text-white"
+                  MenuProps={{
+                    PaperProps: {
+                      className: 'bg-white text-gray-900 dark:bg-[#23234f] dark:text-white',
+                    },
                   }}
                 >
                   <MenuItem value="">All Status</MenuItem>
@@ -387,17 +367,17 @@ const ProjectManagement = () => {
                   <MenuItem value="cancelled">Cancelled</MenuItem>
                 </Select>
               </FormControl>
-              <FormControl size="small" className="w-48" sx={{ bgcolor: { xs: '#fff', dark: '#23234f' }, color: { xs: 'inherit', dark: '#fff' } }}>
-                <InputLabel sx={{ color: { xs: 'inherit', dark: '#fff' }, backgroundColor: { xs: '#fff', dark: '#23234f' }, px: 0.5 }}>Sort By</InputLabel>
+              <FormControl size="small" className="w-48 bg-white text-gray-900 dark:bg-[#23234f] dark:text-white rounded-lg border border-gray-200 dark:border-indigo-700">
+                <InputLabel className="bg-white text-gray-900 dark:bg-[#23234f] dark:text-white">Sort By</InputLabel>
                 <Select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
                   label="Sort By"
-                  sx={{
-                    color: { xs: 'inherit', dark: '#fff' },
-                    backgroundColor: { xs: '#fff', dark: '#23234f' },
-                    '.MuiOutlinedInput-notchedOutline': { borderColor: { xs: undefined, dark: '#3f3f7f' } },
-                    '& .MuiSelect-select': { color: { xs: 'inherit', dark: '#fff' }, backgroundColor: { xs: '#fff', dark: '#23234f' } },
+                  className="bg-white text-gray-900 dark:bg-[#23234f] dark:text-white"
+                  MenuProps={{
+                    PaperProps: {
+                      className: 'bg-white text-gray-900 dark:bg-[#23234f] dark:text-white',
+                    },
                   }}
                 >
                   <MenuItem value="createdAt">Created Date</MenuItem>

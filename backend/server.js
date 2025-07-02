@@ -35,6 +35,10 @@ pool.query('SELECT NOW()', (err) => {
 // API Routes - Use centralized route structure
 app.use('/api', require('./routes/index'));
 
+app.get('/', (req, res) => {
+  res.send('Hello World');
+});
+
 // Serve static files in production
 if (process.env.NODE_ENV === 'production') {
   app.use(express.static(path.join(__dirname, '../client/build')));

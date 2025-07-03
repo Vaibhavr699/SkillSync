@@ -53,17 +53,17 @@ const Register = () => {
   });
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center overflow-y-auto bg-[url('/authbg.jpg')] bg-cover bg-center before:content-[''] before:fixed before:inset-0 before:bg-[#0a2a5c]/90 before:-z-10">
-      <div className="w-full max-w-md bg-white/95 rounded-3xl shadow-2xl p-8 flex flex-col items-center">
+    <div className="fixed inset-0 flex items-center justify-center overflow-y-auto bg-[url('/authbg.jpg')] bg-cover bg-center before:content-[''] before:fixed before:inset-0 before:bg-[#0a2a5c]/90 before:-z-10 dark:before:bg-[#0a2a5c]/95">
+      <div className="w-full max-w-md bg-white/95 dark:bg-indigo-950/95 rounded-3xl shadow-2xl p-8 flex flex-col items-center">
         <img src="/logo.svg" alt="SkillSync Logo" className="w-14 h-14 mb-4" />
-        <h2 className="text-3xl font-extrabold text-[#0a2a5c] mb-2">Create your SkillSync account</h2>
-        <p className="text-blue-900/70 mb-6 text-center">
+        <h2 className="text-3xl font-extrabold text-[#0a2a5c] dark:text-white mb-2">Create your SkillSync account</h2>
+        <p className="text-blue-900/70 dark:text-indigo-200 mb-6 text-center">
           Sign up to get started and unlock your productivity.
         </p>
 
         <form onSubmit={formik.handleSubmit} className="w-full flex flex-col gap-4">
           <input
-            className="px-4 py-3 rounded-lg border border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all text-base bg-blue-50 placeholder:text-blue-300"
+            className="px-4 py-3 rounded-lg border border-blue-200 dark:border-indigo-700 focus:border-blue-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-blue-200 dark:focus:ring-indigo-700 outline-none transition-all text-base bg-blue-50 dark:bg-indigo-900 placeholder:text-blue-300 dark:placeholder:text-indigo-300 text-blue-900 dark:text-white"
             name="name"
             type="text"
             placeholder="Full Name"
@@ -77,7 +77,7 @@ const Register = () => {
           )}
 
           <input
-            className="px-4 py-3 rounded-lg border border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all text-base bg-blue-50 placeholder:text-blue-300"
+            className="px-4 py-3 rounded-lg border border-blue-200 dark:border-indigo-700 focus:border-blue-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-blue-200 dark:focus:ring-indigo-700 outline-none transition-all text-base bg-blue-50 dark:bg-indigo-900 placeholder:text-blue-300 dark:placeholder:text-indigo-300 text-blue-900 dark:text-white"
             name="email"
             type="email"
             placeholder="Email address"
@@ -91,7 +91,7 @@ const Register = () => {
           )}
 
           <input
-            className="px-4 py-3 rounded-lg border border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all text-base bg-blue-50 placeholder:text-blue-300"
+            className="px-4 py-3 rounded-lg border border-blue-200 dark:border-indigo-700 focus:border-blue-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-blue-200 dark:focus:ring-indigo-700 outline-none transition-all text-base bg-blue-50 dark:bg-indigo-900 placeholder:text-blue-300 dark:placeholder:text-indigo-300 text-blue-900 dark:text-white"
             name="password"
             type="password"
             placeholder="Password"
@@ -105,7 +105,7 @@ const Register = () => {
           )}
 
           <input
-            className="px-4 py-3 rounded-lg border border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all text-base bg-blue-50 placeholder:text-blue-300"
+            className="px-4 py-3 rounded-lg border border-blue-200 dark:border-indigo-700 focus:border-blue-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-blue-200 dark:focus:ring-indigo-700 outline-none transition-all text-base bg-blue-50 dark:bg-indigo-900 placeholder:text-blue-300 dark:placeholder:text-indigo-300 text-blue-900 dark:text-white"
             name="confirmPassword"
             type="password"
             placeholder="Confirm Password"
@@ -119,7 +119,7 @@ const Register = () => {
           )}
 
           <select
-            className="px-4 py-3 rounded-lg border border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all text-base bg-blue-50 text-blue-900"
+            className="px-4 py-3 rounded-lg border border-blue-200 dark:border-indigo-700 focus:border-blue-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-blue-200 dark:focus:ring-indigo-700 outline-none transition-all text-base bg-blue-50 dark:bg-indigo-900 text-blue-900 dark:text-white"
             name="role"
             value={formik.values.role}
             onChange={formik.handleChange}
@@ -135,16 +135,16 @@ const Register = () => {
 
           <button
             type="submit"
-            className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-md transition-all text-lg disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full py-3 bg-blue-600 dark:bg-indigo-700 hover:bg-blue-700 dark:hover:bg-indigo-800 text-white font-bold rounded-lg shadow-md transition-all text-lg disabled:opacity-60 disabled:cursor-not-allowed"
             disabled={loading || submitting}
           >
             {loading || submitting ? 'Signing up...' : 'Sign Up'}
           </button>
         </form>
 
-        <div className="mt-6 text-blue-900/70 text-center">
+        <div className="mt-6 text-blue-900/70 dark:text-indigo-200 text-center">
           Already have an account?{' '}
-          <Link to="/login" className="text-blue-500 hover:underline font-semibold transition-all">
+          <Link to="/login" className="text-blue-500 dark:text-indigo-300 hover:underline font-semibold transition-all">
             Sign in
           </Link>
         </div>

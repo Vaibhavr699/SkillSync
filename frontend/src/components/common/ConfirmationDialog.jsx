@@ -6,6 +6,7 @@ const ConfirmationDialog = ({
   onConfirm, 
   title, 
   message,
+  content,
   confirmText = 'Confirm',
   cancelText = 'Cancel'
 }) => {
@@ -18,9 +19,13 @@ const ConfirmationDialog = ({
     >
       <DialogTitle id="alert-dialog-title">{title}</DialogTitle>
       <DialogContent>
-        <DialogContentText id="alert-dialog-description">
-          {message}
-        </DialogContentText>
+        {content ? (
+          content
+        ) : (
+          <DialogContentText id="alert-dialog-description">
+            {message}
+          </DialogContentText>
+        )}
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>{cancelText}</Button>

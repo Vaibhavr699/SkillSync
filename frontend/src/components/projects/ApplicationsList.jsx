@@ -445,3 +445,17 @@ const ApplicationsList = ({
 };
 
 export default ApplicationsList; 
+
+export const ApplicationsCountCard = ({ count }) => {
+  return (
+    <div className="flex flex-col items-center justify-center h-24 w-full">
+      <div className="flex items-center justify-center bg-indigo-800 text-white rounded-full w-12 h-12 mb-2">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 16.5a7.488 7.488 0 00-5.982 2.225M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm6 2.25a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span className="ml-2 text-lg font-bold">{count}</span>
+      </div>
+      <span className="text-xs text-indigo-200">Applications</span>
+    </div>
+  );
+}; 

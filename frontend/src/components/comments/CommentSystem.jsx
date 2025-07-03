@@ -4,7 +4,6 @@ import {
   Box,
   Paper,
   Typography,
-  Divider,
   Tabs,
   Tab
 } from '@mui/material';
@@ -23,50 +22,53 @@ const CommentSystem = ({
     setActiveTab(newValue);
   };
 
-  if (showTabs) {
-    return (
-      <Paper sx={{ width: '100%' }}>
-        <Tabs
-          value={activeTab}
-          onChange={handleTabChange}
-          sx={{ borderBottom: 1, borderColor: 'divider' }}
-        >
-          <Tab label="Comments" />
-          <Tab label="Activity" />
-        </Tabs>
-        
-        <Box sx={{ p: 2 }}>
-          {activeTab === 0 && (
+  return (
+    <Paper elevation={0} sx={{ width: '100%', borderRadius: 3, border: '1px solid', borderColor: 'divider', bgcolor: 'background.paper' }}>
+      {showTabs ? (
+        <>
+          <Tabs
+            value={activeTab}
+            onChange={handleTabChange}
+            textColor="primary"
+            indicatorColor="primary"
+            sx={{ px: 2, pt: 1 }}
+          >
+            <Tab label="Comments" sx={{ textTransform: 'none', fontWeight: 500 }} />
+            <Tab label="Activity" sx={{ textTransform: 'none', fontWeight: 500 }} />
+          </Tabs>
+          <Box sx={{ p: 2 }}>
+            {activeTab === 0 && (
+              <CommentsSection
+                resourceType={resourceType}
+                resourceId={resourceId}
+                compact={compact}
+              />
+            )}
+            {activeTab === 1 && (
+              <Box sx={{ py: 2 }}>
+                <Typography variant="body2" color="text.secondary">
+                  Activity feed coming soon...
+                </Typography>
+              </Box>
+            )}
+          </Box>
+        </>
+      ) : (
+        <>
+          <Box sx={{ px: 2, pt: 2 }}>
+            <Typography variant="h6" sx={{ fontWeight: 600, textBase: 'sm:text-lg' }}>
+              {title}
+            </Typography>
+          </Box>
+          <Box sx={{ p: 2 }}>
             <CommentsSection
               resourceType={resourceType}
               resourceId={resourceId}
               compact={compact}
             />
-          )}
-          {activeTab === 1 && (
-            <Box sx={{ py: 2 }}>
-              <Typography variant="body2" color="text.secondary">
-                Activity feed coming soon...
-              </Typography>
-            </Box>
-          )}
-        </Box>
-      </Paper>
-    );
-  }
-
-  return (
-    <Paper sx={{ width: '100%' }}>
-      <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
-        <Typography variant="h6" sx={{ fontWeight: 600 }}>
-          {title}
-        </Typography>
-      </Box>
-      <CommentsSection
-        resourceType={resourceType}
-        resourceId={resourceId}
-        compact={compact}
-      />
+          </Box>
+        </>
+      )}
     </Paper>
   );
 };
@@ -79,4 +81,4 @@ CommentSystem.propTypes = {
   showTabs: PropTypes.bool
 };
 
-export default CommentSystem; 
+export default CommentSystem;

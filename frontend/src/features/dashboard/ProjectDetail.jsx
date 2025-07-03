@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { 
   TextField,
+  Tooltip,
 } from '@mui/material';
 import { 
 
@@ -35,6 +36,7 @@ import * as Yup from 'yup';
 import RichTextEditor from '../../components/common/RichTextEditor';
 import LoadingButton from '../../components/common/LoadingButton';
 import ConfirmationDialog from '../../components/common/ConfirmationDialog';
+import { HiOutlineChatBubbleOvalLeftEllipsis } from 'react-icons/hi2';
 import FileUpload from '../../components/files/FileUpload';
 import { toast } from 'react-hot-toast';
 import {
@@ -42,6 +44,18 @@ import {
 } from 'recharts';
 import AIAssistant from '../ai/AIAssistant';
 import ProjectAnalytics from '../../components/projects/ProjectAnalytics';
+import {
+  HiOutlineCurrencyDollar,
+  HiOutlineClock,
+  HiOutlineTag,
+  HiOutlineUser,
+  HiOutlineCalendar,
+  HiOutlineClipboardList,
+  HiOutlineUserGroup,
+  HiOutlineOfficeBuilding,
+  HiOutlineMail,
+  HiOutlineDocumentText,
+} from 'react-icons/hi';
 
 const ProjectDetail = () => {
   const { projectId } = useParams();
@@ -132,12 +146,10 @@ const ProjectDetail = () => {
       })).unwrap();
       setApplyDialogOpen(false);
       toast.success('Application submitted successfully!');
-      // Refresh project data and applications
+      // Always refresh project data and applications for all users
       if (projectId) {
         dispatch(fetchProjectById(projectId));
-        if (user?.role === 'company') {
-          dispatch(fetchApplications(projectId));
-        }
+        dispatch(fetchApplications(projectId));
       }
     } catch (error) {
       toast.error(error.message || 'Failed to submit application');
@@ -411,18 +423,18 @@ Deadline: ${currentProject?.deadline ? format(new Date(currentProject.deadline),
   if (!currentProject) return <div className="text-center py-6">Project not found</div>;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-white dark:from-indigo-950 dark:to-indigo-900 px-2 md:px-8 py-8 pt-16 overflow-y-auto">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-white dark:from-indigo-950 dark:to-indigo-900 px-2 md:px-8 mt-14 sm:mt-16 pb-8 overflow-y-auto">
       {/* Header */}
       <div className=" p-1 border-b border-gray-200 bg-white dark:bg-gray-800 flex items-center gap-2 flex-shrink-0">
         <button onClick={() => navigate(-1)} className="p-2 rounded-full hover:bg-indigo-100 text-indigo-700 transition"><ArrowBack /></button>
         <h1 className="text-2xl font-bold text-indigo-800">{currentProject?.title || 'Project Details'}</h1>
       </div>
       {/* Tabs - sticky below navbar */}
-      <div className="sticky top-12 z-20 bg-white dark:bg-gray-800 border-b border-indigo-200 flex gap-2  flex-shrink-0">
+      <div className="sticky top-12 z-20 bg-white dark:bg-gray-800 border-b border-indigo-200 flex flex-wrap md:flex-nowrap gap-2 flex-shrink-0 overflow-x-auto whitespace-nowrap px-2 sm:px-4">
         {['overview', 'tasks', 'files', isOwner ? 'applications' : null].filter(Boolean).map(tab => (
           <button
             key={tab}
-            className={`px-10 py-4 text-base font-semibold capitalize transition border-b-2 -mb-px ${tabValue === tab ? 'border-indigo-500 text-indigo-700 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-indigo-600'}`}
+            className={`px-4 sm:px-8 py-2 sm:py-4 text-sm sm:text-base font-semibold capitalize transition border-b-2 -mb-px ${tabValue === tab ? 'border-indigo-500 text-indigo-700 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-indigo-600'}`}
             onClick={() => setTabValue(tab)}
           >
             {tab}
@@ -434,9 +446,9 @@ Deadline: ${currentProject?.deadline ? format(new Date(currentProject.deadline),
         <div className="p-4 md:p-8 max-w-full mx-auto w-full">
           {/* Overview Tab */}
           {tabValue === 'overview' && (
-            <div className="bg-white dark:bg-indigo-900 rounded-2xl shadow-xl border border-indigo-100 dark:border-indigo-800 p-4 md:p-8 flex flex-col gap-4">
+            <div className="bg-white dark:bg-indigo-900 rounded-2xl shadow-xl border border-indigo-100 dark:border-indigo-800 p-4 md:p-8 flex flex-col gap-6">
               {/* Project Summary Card */}
-              <div className="bg-white/80 dark:bg-indigo-950/80 rounded-xl p-6 md:p-10 flex flex-col gap-4 border border-indigo-100 dark:border-indigo-800">
+              <div className="bg-white/80 dark:bg-indigo-950/80 rounded-xl p-6 md:p-10 flex flex-col gap-6 border border-indigo-100 dark:border-indigo-800">
                 {/* Title & Description */}
                 <div className="mb-2">
                   <h2 className="font-extrabold text-3xl md:text-4xl text-indigo-900 dark:text-white flex items-center gap-3">
@@ -454,27 +466,41 @@ Deadline: ${currentProject?.deadline ? format(new Date(currentProject.deadline),
                   </h2>
                   <p className="text-gray-600 dark:text-indigo-100 text-lg mb-2 font-medium">{currentProject.description}</p>
                   {/* Apply Now button for freelancers who have not applied */}
-                  {user?.role === 'freelancer' && !projectApplications.some(app => app.freelancer?._id === user?.id || app.freelancer?.id === user?.id) && (
-                    <button
-                      className="mt-4 flex items-center gap-2 px-8 py-2 rounded bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold shadow-lg hover:from-indigo-600 hover:to-purple-700 transition text-base"
-                      onClick={() => setApplyDialogOpen(true)}
-                    >
-                      <PersonAdd className="!text-base" /> Apply Now
-                    </button>
+                  {user?.role === 'freelancer' && (
+                    projectApplications.some(app => app.freelancer?._id === user?.id || app.freelancer?.id === user?.id)
+                      ? (
+                        <Tooltip title="You have already applied for this project. You cannot apply again." arrow>
+                          <span>
+                            <button
+                              className="mt-4 flex items-center gap-2 px-8 py-2 rounded bg-gray-300 text-gray-500 font-bold shadow-lg cursor-not-allowed text-base"
+                              disabled
+                            >
+                              <PersonAdd className="!text-base" /> Already Applied
+                            </button>
+                          </span>
+                        </Tooltip>
+                      ) : (
+                        <button
+                          className="mt-4 flex items-center gap-2 px-8 py-2 rounded bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold shadow-lg hover:from-indigo-600 hover:to-purple-700 transition text-base"
+                          onClick={() => setApplyDialogOpen(true)}
+                        >
+                          <PersonAdd className="!text-base" /> Apply Now
+                        </button>
+                      )
                   )}
                 </div>
-                {/* Meta Info Grid */}
+                {/* Enhanced Project Details Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="flex flex-col items-start gap-1">
-                    <span className="text-xs text-gray-500 font-medium">Budget</span>
+                    <span className="text-xs text-gray-500 font-medium flex items-center gap-1"><HiOutlineCurrencyDollar className="w-4 h-4 text-green-600" /> Budget</span>
                     <span className="font-bold text-indigo-800 dark:text-green-300 text-lg">₹{currentProject.budget?.toLocaleString('en-IN') || '0'}</span>
                   </div>
                   <div className="flex flex-col items-start gap-1">
-                    <span className="text-xs text-gray-500 font-medium">Deadline</span>
+                    <span className="text-xs text-gray-500 font-medium flex items-center gap-1"><HiOutlineClock className="w-4 h-4 text-orange-600" /> Deadline</span>
                     <span className="font-bold text-purple-800 dark:text-indigo-100 text-lg">{currentProject.deadline ? format(new Date(currentProject.deadline), 'MMM dd, yyyy') : 'Not specified'}</span>
                   </div>
                   <div className="flex flex-col items-start gap-1">
-                    <span className="text-xs text-gray-500 font-medium">Tags</span>
+                    <span className="text-xs text-gray-500 font-medium flex items-center gap-1"><HiOutlineTag className="w-4 h-4 text-pink-500" /> Tags</span>
                     <div className="flex flex-wrap gap-1">
                       {currentProject.tags?.length > 0 ? (
                         currentProject.tags.map(tag => (
@@ -486,56 +512,91 @@ Deadline: ${currentProject?.deadline ? format(new Date(currentProject.deadline),
                     </div>
                   </div>
                   <div className="flex flex-col items-start gap-1">
-                    <span className="text-xs text-gray-500 font-medium">Owner</span>
+                    <span className="text-xs text-gray-500 font-medium flex items-center gap-1"><HiOutlineUser className="w-4 h-4 text-indigo-500" /> Owner</span>
                     <div className="flex items-center gap-2 mt-1">
                       <img src={currentProject.owner?.photo || '/logo.svg'} alt="Owner" className="w-8 h-8 rounded-full border-2 border-indigo-200 dark:border-indigo-700 shadow" />
                       <span className="font-semibold text-indigo-900 dark:text-white">{currentProject.owner?.name || 'Company'}</span>
                     </div>
                   </div>
-                </div>
-                {/* Comments Section - preview */}
-                <div className="mt-6">
-                  <div className="px-0 md:px-6 pt-6 pb-6 bg-white/60 dark:bg-indigo-950/80 border-t border-indigo-100 dark:border-indigo-800 rounded-b-2xl">
-                    <div className="flex justify-between items-center mb-4">
-                      <div className="font-semibold text-indigo-700 dark:text-white flex items-center gap-2">
-                        <span className="material-icons text-2xl">Recent Comments</span>
-                      </div>
-                      <button
-                        className="px-4 py-1 rounded bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-semibold text-sm dark:bg-indigo-800 dark:hover:bg-indigo-700 dark:text-indigo-100"
-                        onClick={() => setTabValue('comments')}
-                      >
-                        View All
-                      </button>
-                    </div>
-                    <div className="bg-white dark:bg-indigo-900 rounded-xl shadow-sm border border-indigo-100 dark:border-indigo-800 p-6">
-                      <CommentsSection 
-                        resourceType="project" 
-                        resourceId={projectId} 
-                        preview={true}
-                        maxComments={3}
-                      />
-                    </div>
+                  <div className="flex flex-col items-start gap-1">
+                    <span className="text-xs text-gray-500 font-medium flex items-center gap-1"><HiOutlineCalendar className="w-4 h-4 text-blue-500" /> Created</span>
+                    <span className="text-gray-700 dark:text-gray-200 text-sm">{currentProject.createdAt ? format(new Date(currentProject.createdAt), 'MMM dd, yyyy, hh:mm a') : 'N/A'}</span>
                   </div>
+                  <div className="flex flex-col items-start gap-1">
+                    <span className="text-xs text-gray-500 font-medium flex items-center gap-1"><HiOutlineCalendar className="w-4 h-4 text-indigo-500" /> Last Updated</span>
+                    <span className="text-gray-700 dark:text-gray-200 text-sm">{currentProject.updatedAt ? format(new Date(currentProject.updatedAt), 'MMM dd, yyyy, hh:mm a') : 'N/A'}</span>
+                  </div>
+                  <div className="flex flex-col items-start gap-1">
+                    <span className="text-xs text-gray-500 font-medium flex items-center gap-1"><HiOutlineClipboardList className="w-4 h-4 text-indigo-600" /> Tasks</span>
+                    <span className="font-semibold text-indigo-700 dark:text-indigo-200 text-base">{tasks.length}</span>
+                  </div>
+                  <div className="flex flex-col items-start gap-1">
+                    <span className="text-xs text-gray-500 font-medium flex items-center gap-1"><HiOutlineUserGroup className="w-4 h-4 text-blue-600" /> Applicants</span>
+                    <span className="font-semibold text-indigo-700 dark:text-indigo-200 text-base">{projectApplications.length}</span>
+                  </div>
+                  {currentProject.company?.name && (
+                    <div className="flex flex-col items-start gap-1">
+                      <span className="text-xs text-gray-500 font-medium flex items-center gap-1"><HiOutlineOfficeBuilding className="w-4 h-4 text-indigo-700" /> Company</span>
+                      <span className="font-semibold text-indigo-900 dark:text-white">{currentProject.company.name}</span>
+                    </div>
+                  )}
+                  {currentProject.company?.email && (
+                    <div className="flex flex-col items-start gap-1">
+                      <span className="text-xs text-gray-500 font-medium flex items-center gap-1"><HiOutlineMail className="w-4 h-4 text-indigo-500" /> Company Email</span>
+                      <span className="text-indigo-700 dark:text-indigo-200 text-xs">{currentProject.company.email}</span>
+                    </div>
+                  )}
+                  {Array.isArray(currentProject.files) && (
+                    <div className="flex flex-col items-start gap-1">
+                      <span className="text-xs text-gray-500 font-medium flex items-center gap-1"><HiOutlineDocumentText className="w-4 h-4 text-indigo-500" /> Attachments</span>
+                      <span className="text-indigo-700 dark:text-indigo-200 text-xs">{currentProject.files.length} file(s)</span>
+                    </div>
+                  )}
                 </div>
-                {/* Analytics Section - preview */}
-                <div className="mt-6">
+                {/* Analytics Section - preview (moved above comments) */}
+                <div className="mt-8">
                   <div className="px-0 md:px-6 pt-0 pb-6 bg-white/60 dark:bg-indigo-950/80 border-t border-indigo-100 dark:border-indigo-800 rounded-b-2xl">
                     <div className="flex justify-between items-center mb-4">
                       <div className="font-semibold text-indigo-700 dark:text-white flex items-center gap-2">
                         <span className="material-icons text-base">Project Analytics</span>
                       </div>
-                      <button
-                        className="px-4 py-1 rounded bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-semibold text-sm dark:bg-indigo-800 dark:hover:bg-indigo-700 dark:text-indigo-100"
-                        onClick={() => setTabValue('analytics')}
-                      >
-                        View Full Analytics
-                      </button>
                     </div>
                     <div className="bg-white dark:bg-indigo-900 rounded-xl shadow-sm border border-indigo-100 dark:border-indigo-800 p-6">
                       <ProjectAnalytics project={currentProject} />
                     </div>
                   </div>
                 </div>
+                {/* Comments Section - preview (moved below analytics, modern UI) */}
+                <div className="mt-8">
+  <div className="px-0 md:px-6 pt-6 pb-6 bg-white/60 dark:bg-indigo-950/80 border-t border-indigo-100 dark:border-indigo-800 rounded-b-2xl">
+    <div className="flex justify-between items-center mb-5">
+      {/* Title with Icon */}
+      <div className="flex items-center gap-2 text-indigo-700 dark:text-white font-semibold">
+        <HiOutlineChatBubbleOvalLeftEllipsis className="w-6 h-6 text-indigo-500 dark:text-indigo-300" />
+        <span className="text-lg md:text-xl">Recent Comments</span>
+      </div>
+
+      {/* View All Button */}
+      <button
+        className="inline-flex items-center px-4 py-1.5 rounded-md bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-medium text-sm transition-colors dark:bg-indigo-800 dark:hover:bg-indigo-700 dark:text-indigo-100"
+        onClick={() => setTabValue('comments')}
+      >
+        View All
+      </button>
+    </div>
+
+    {/* Comments Preview Card */}
+    <div className="bg-white dark:bg-indigo-900 rounded-2xl shadow-md border border-indigo-100 dark:border-indigo-800 p-5 md:p-6 space-y-4 transition-all duration-300">
+      <CommentsSection 
+        resourceType="project" 
+        resourceId={projectId} 
+        preview={true}
+        maxComments={3}
+        className="modern-comments-preview"
+      />
+    </div>
+  </div>
+</div>
               </div>
             </div>
           )}

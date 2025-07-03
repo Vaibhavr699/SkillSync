@@ -128,7 +128,7 @@ const Dashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-indigo-950 p-6 pt-20 h-[calc(100vh-80px)] overflow-y-auto">
+    <div className="min-h-screen bg-gray-50 dark:bg-indigo-950 p-6 pt-18 h-[calc(100vh-90px)] overflow-y-auto scrollbar-thin scrollbar-thumb-indigo-300 dark:scrollbar-thumb-indigo-700 scrollbar-track-transparent" style={{ marginTop: '56px' }}>
       {/* Welcome Header */}
       <div className="mb-8">
         <div className="flex items-center gap-4 mb-4">

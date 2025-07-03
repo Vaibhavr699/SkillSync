@@ -165,10 +165,10 @@ const FileViewer = ({ files = [], onDelete, readOnly = false, title = "Project F
                   {fileSize && <div className="text-xs text-gray-400">{fileSize}</div>}
                 </div>
               </div>
-              <div className="flex gap-2 mt-2">
+              <div className="flex flex-wrap gap-2 mt-2 w-full">
                 {canPreviewFile && fileUrl && (
                   <button
-                    className="inline-flex items-center gap-1 px-3 py-1 text-xs rounded bg-gray-100 hover:bg-gray-200 text-gray-700"
+                    className="inline-flex items-center gap-1 px-3 py-1 text-xs rounded bg-gray-100 hover:bg-gray-200 text-gray-700 flex-1 min-w-[110px]"
                     onClick={() => handlePreview(file)}
                   >
                     <EyeIcon className="w-4 h-4" /> Preview
@@ -176,7 +176,7 @@ const FileViewer = ({ files = [], onDelete, readOnly = false, title = "Project F
                 )}
                 {fileUrl && (
                   <button
-                    className="inline-flex items-center gap-1 px-3 py-1 text-xs rounded bg-gray-100 hover:bg-gray-200 text-gray-700"
+                    className="inline-flex items-center gap-1 px-3 py-1 text-xs rounded bg-gray-100 hover:bg-gray-200 text-gray-700 flex-1 min-w-[110px]"
                     onClick={() => handleDownload(file)}
                   >
                     <ArrowDownTrayIcon className="w-4 h-4" /> Download
@@ -184,7 +184,7 @@ const FileViewer = ({ files = [], onDelete, readOnly = false, title = "Project F
                 )}
                 {!readOnly && onDelete && fileUrl && (
                   <button
-                    className="inline-flex items-center gap-1 px-3 py-1 text-xs rounded bg-red-100 hover:bg-red-200 text-red-700"
+                    className="inline-flex items-center gap-1 px-3 py-1 text-xs rounded bg-red-100 hover:bg-red-200 text-red-700 flex-1 min-w-[110px]"
                     onClick={() => onDelete(file)}
                   >
                     <TrashIcon className="w-4 h-4" /> Delete

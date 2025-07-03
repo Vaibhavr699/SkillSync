@@ -1,7 +1,8 @@
 const bcrypt = require('bcryptjs');
 const db = require('../config/db');
 const { generateToken } = require('../config/jwt');
-const { sendVerificationEmail } = require('./email.service');
+const { sendVerificationEmail, sendPasswordResetEmail, sendApplicationSubmittedEmail, sendApplicationStatusEmail } = require('./email.service');
+const crypto = require('crypto');
 
 const registerUser = async (email, password, role, name, skipVerification = false) => {
   // Check if user exists
@@ -73,6 +74,8 @@ const loginUser = async (email, password) => {
     throw new Error('Account is deactivated');
   }
 
+  // Remove any 2FA/OTP logic for admin users here
+  // Always return tokens and user object for all users
   const accessToken = generateToken(user.rows[0].id, '1h');
   const refreshToken = generateToken(user.rows[0].id, '30d');
 

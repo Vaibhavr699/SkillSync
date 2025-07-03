@@ -18,10 +18,12 @@ import {
   HiOutlineRocketLaunch,
   HiOutlineSparkles,
   HiOutlineUsers,
-  HiOutlineChartBar
+  HiOutlineChartBar,
+  HiOutlineBars3,
+  HiXMark
 } from 'react-icons/hi2';
 
-const Sidebar = () => {
+const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   const { user } = useSelector((state) => state.auth);
   const location = useLocation();
   const navigate = useNavigate();
@@ -110,13 +112,18 @@ const Sidebar = () => {
   const IconComponent = config.icons;
 
   return (
-    <aside className="w-64 min-h-screen bg-white dark:bg-indigo-950 border-r border-indigo-200 dark:border-indigo-800 shadow-lg flex flex-col pt-16 text-indigo-900 dark:text-white">
+    <aside className={`
+      hidden lg:block
+      top-18 left-0 h-[calc(100vh-90rem)] w-64 bg-white dark:bg-blue-800 shadow-xl transition-transform duration-300 ease-in-out
+      ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+      lg:static lg:translate-x-0 lg:transform-none lg:rounded-2xl lg:shadow-2xl lg:my-12 lg:mb-12 lg:w-64
+    `}>
       {/* Enhanced Profile Section */}
       <div className={`p-6 bg-gradient-to-r from-indigo-700 via-indigo-600 to-indigo-500 text-white`}>
         <div className="flex items-center space-x-4">
           <div className="relative">
             <img
-              src={user?.photo || `https://ui-avatars.com/api/?name=${user?.name?.charAt(0) || 'U'}&background=ffffff&color=000000`}
+              src={user?.photo || `https://ui-avatars.com/api/?name=${user?.name?.charAt(0) || 'U'}&background=#1E1B4B&color=000000`}
               alt={user?.name}
               className="w-16 h-16 rounded-2xl border-4 border-white/30 shadow-xl object-cover"
             />
@@ -183,53 +190,17 @@ const Sidebar = () => {
         )}
 
         {/* Projects Section */}
-        <div className="space-y-1">
-          <button 
-            onClick={() => setOpenProjects(!openProjects)} 
-            className={`flex items-center justify-between w-full px-4 py-3 rounded-xl transition-all duration-200 font-medium group
-              ${openProjects ? 'bg-indigo-700 dark:bg-indigo-800 text-white shadow-md' : 'hover:bg-indigo-100 dark:hover:bg-indigo-800 text-indigo-900 dark:text-white'}
-            `}
-          >
-            <div className="flex items-center gap-4">
-              <IconComponent.projects className="w-5 h-5" />
-              <span>Projects</span>
-            </div>
-            <div className={`transform transition-transform duration-200 ${openProjects ? 'rotate-180' : ''}`}>
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
-          </button>
-          
-          {openProjects && (
-            <div className="ml-4 space-y-1">
-              <Link to="/dashboard/projects" className="block px-4 py-2 rounded-lg text-sm font-medium transition-colors duration-200 hover:bg-indigo-100 dark:hover:bg-indigo-800 text-indigo-900 dark:text-white">All Projects</Link>
-              {/* {user?.role === 'company' && (
-                <Link 
-                  to="/dashboard/company-applications" 
-                  className={`block px-4 py-2 rounded-lg transition-all duration-200 text-sm ${
-                    location.pathname === '/dashboard/company-applications' 
-                      ? 'bg-indigo-200 text-indigo-800' 
-                      : 'text-indigo-900 hover:bg-indigo-100'                  }`}
-                >
-                  All Applications
-                </Link>
-              )} */}
-              {user?.role === 'freelancer' && (
-                <Link 
-                  to="/dashboard/applications" 
-                  className={`block px-4 py-2 rounded-lg transition-all duration-200 text-sm ${
-                    location.pathname === '/dashboard/applications' 
-                      ? 'bg-indigo-200 text-indigo-800' 
-                      : 'text-indigo-900 hover:bg-indigo-100'
-                  }`}
-                >
-                  My Applications
-                </Link>
-              )}
-            </div>
-          )}
-        </div>
+        <Link 
+          to="/dashboard/projects" 
+          className={`flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 font-medium group
+            ${location.pathname === '/dashboard/projects' 
+              ? 'bg-indigo-700 dark:bg-indigo-800 text-white shadow-md' 
+              : 'hover:bg-indigo-100 dark:hover:bg-indigo-800 text-indigo-900 dark:text-white'}
+          `}
+        >
+          <IconComponent.projects className="w-5 h-5" />
+          <span>Projects</span>
+        </Link>
 
         {/* Tasks Section */}
         {/* <div className="space-y-1">
@@ -314,6 +285,20 @@ const Sidebar = () => {
           </div>
         )}
       </nav>
+
+      {/* Hamburger Button for md and below (shows when sidebar is hidden) */}
+      <div className="block lg:hidden fixed top-4 right-4 z-50">
+        <button onClick={() => setSidebarOpen(true)} className="p-2 rounded-md bg-white shadow-md">
+          <HiOutlineBars3 className="w-6 h-6 text-indigo-700" />
+        </button>
+      </div>
+
+      {/* Close button on mobile */}
+      <div className="lg:hidden absolute top-4 right-4">
+        <button onClick={() => setSidebarOpen(false)} className="p-1 rounded-md bg-white shadow">
+          <HiXMark className="w-6 h-6 text-red-500" />
+        </button>
+      </div>
     </aside>
   );
 };

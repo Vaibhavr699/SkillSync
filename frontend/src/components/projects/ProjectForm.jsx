@@ -17,8 +17,10 @@ import {
   IconButton,
   Alert,
   LinearProgress,
-  Divider
+  Divider,
+  DialogActions
 } from '@mui/material';
+import { LoadingButton } from '@mui/lab';
 import {
   CloudUpload,
   Delete,
@@ -177,11 +179,11 @@ const ProjectForm = ({
     >
       {({ values, errors, touched, handleChange, handleBlur, setFieldValue, isSubmitting }) => (
         <Form>
-          <div className="p-6 bg-gradient-to-br from-gray-50 to-blue-50 min-h-full">
+          <div className="p-6 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-indigo-950 dark:to-indigo-900 min-h-full">
             <div className="max-w-4xl mx-auto">
               <div className="space-y-8">
                 {/* Basic Information */}
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                <div className="bg-white dark:bg-indigo-900 rounded-2xl shadow-lg border border-gray-100 dark:border-indigo-800 p-6">
                   <div className="flex items-center space-x-3 mb-6">
                     <div className="p-2 bg-blue-100 rounded-lg">
                       <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -384,18 +386,18 @@ const ProjectForm = ({
                 </div>
 
                 {/* File upload is only available after project creation. */}
-                <div className="text-sm text-gray-500 mt-2">
+                <div className="text-sm bg-white dark:bg-indigo-900 text-white mt-2">
                   You can upload files after creating the project.
                 </div>
 
                 {/* Action Buttons */}
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+                <div className="bg-white dark:bg-indigo-900 rounded-2xl shadow-lg border border-gray-100 p-6">
                   <div className="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4">
                     <Button
                       variant="outlined"
                       onClick={onCancel}
                       disabled={loading || isSubmitting}
-                      className="border-gray-300 text-gray-700 hover:bg-gray-50 rounded-xl px-8 py-3"
+                      className="border-gray-300 dark:bg-white text-gray-700 hover:bg-gray-50 rounded-xl px-8 py-3"
                     >
                       Cancel
                     </Button>

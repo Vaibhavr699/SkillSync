@@ -104,10 +104,23 @@ const CompanyApplications = () => {
         feedback: feedback.trim() || undefined
       }));
 
-      toast.success(`Application ${actionType === 'accepted' ? 'accepted' : 'rejected'} successfully!`, {
-        position: "top-right",
-        autoClose: 3000,
-      });
+      if (actionType === 'accepted') {
+        toast.success('Application accepted successfully!', {
+          position: 'top-center',
+          autoClose: 2000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: 'colored',
+        });
+      } else {
+        toast.success('Application rejected successfully!', {
+          position: 'top-right',
+          autoClose: 3000,
+        });
+      }
 
       // Refresh applications
       dispatch(fetchCompanyApplications());

@@ -1,9 +1,29 @@
 const db = require('../config/db');
 const { createTaskAssignedNotification } = require('../services/notification.service');
 
+// Helper to check if user is project owner or assigned member
+async function hasTaskPermission(userId, projectId, taskId = null) {
+  // Check if user is project owner
+  const projectOwner = await db.query('SELECT created_by FROM projects WHERE id = $1', [projectId]);
+  if (projectOwner.rows.length && projectOwner.rows[0].created_by === userId) return true;
+  // If taskId is provided, check if user is assigned to the task
+  if (taskId) {
+    const task = await db.query('SELECT assigned_to FROM tasks WHERE id = $1', [taskId]);
+    if (task.rows.length && task.rows[0].assigned_to === userId) return true;
+  }
+  return false;
+}
+
 // Create a task
 exports.createTask = async (req, res) => {
   try {
+    const { projectId } = req.params;
+    const userId = req.user.id;
+    // Permission: Only project owner can create tasks
+    const projectOwner = await db.query('SELECT created_by FROM projects WHERE id = $1', [projectId]);
+    if (!projectOwner.rows.length || projectOwner.rows[0].created_by !== userId) {
+      return res.status(403).json({ message: 'Only the project owner can create tasks.' });
+    }
     console.log('=== CREATE TASK DEBUG ===');
     console.log('Full request object:', {
       params: req.params,
@@ -32,7 +52,6 @@ exports.createTask = async (req, res) => {
     console.log('assigned_to === undefined:', assigned_to === undefined);
     console.log('assigned_to.trim():', assigned_to ? assigned_to.trim() : 'N/A');
 
-    const { projectId } = req.params;
     console.log('Project ID from params:', projectId);
     console.log('All params:', req.params);
     
@@ -211,6 +230,14 @@ exports.getProjectTeam = async (req, res) => {
 exports.updateTaskStatus = async (req, res) => {
   try {
     const { taskId } = req.params;
+    // Get projectId from task
+    const taskResProject = await db.query('SELECT project_id FROM tasks WHERE id = $1', [taskId]);
+    if (!taskResProject.rows.length) return res.status(404).json({ message: 'Task not found' });
+    const projectId = taskResProject.rows[0].project_id;
+    const userId = req.user.id;
+    if (!(await hasTaskPermission(userId, projectId, taskId))) {
+      return res.status(403).json({ message: 'Not authorized to update status.' });
+    }
     const { status } = req.body;
 
     const result = await db.query(
@@ -233,6 +260,14 @@ exports.updateTaskStatus = async (req, res) => {
 exports.updateTask = async (req, res) => {
   try {
     const { taskId } = req.params;
+    // Get projectId from task
+    const taskResProject = await db.query('SELECT project_id FROM tasks WHERE id = $1', [taskId]);
+    if (!taskResProject.rows.length) return res.status(404).json({ message: 'Task not found' });
+    const projectId = taskResProject.rows[0].project_id;
+    const userId = req.user.id;
+    if (!(await hasTaskPermission(userId, projectId, taskId))) {
+      return res.status(403).json({ message: 'Not authorized to update this task.' });
+    }
     const { title, description, due_date, assigned_to, checklist } = req.body;
 
     // Handle assigned_to - convert empty string to null
@@ -280,14 +315,22 @@ exports.updateTask = async (req, res) => {
 exports.addChecklistItem = async (req, res) => {
   try {
     const { taskId } = req.params;
+    // Get projectId from task
+    const taskResProject = await db.query('SELECT project_id FROM tasks WHERE id = $1', [taskId]);
+    if (!taskResProject.rows.length) return res.status(404).json({ message: 'Task not found' });
+    const projectId = taskResProject.rows[0].project_id;
+    const userId = req.user.id;
+    if (!(await hasTaskPermission(userId, projectId, taskId))) {
+      return res.status(403).json({ message: 'Not authorized to modify checklist.' });
+    }
     const { text } = req.body;
 
-    const taskRes = await db.query('SELECT checklist FROM tasks WHERE id = $1', [taskId]);
-    if (taskRes.rows.length === 0) {
+    const taskResChecklist = await db.query('SELECT checklist FROM tasks WHERE id = $1', [taskId]);
+    if (taskResChecklist.rows.length === 0) {
       return res.status(404).json({ message: 'Task not found' });
     }
 
-    let checklist = taskRes.rows[0].checklist;
+    let checklist = taskResChecklist.rows[0].checklist;
     if (typeof checklist === 'string') {
       try {
         checklist = JSON.parse(checklist);
@@ -322,15 +365,24 @@ exports.addChecklistItem = async (req, res) => {
 // Update checklist item
 exports.updateChecklistItem = async (req, res) => {
   try {
-    const { taskId, itemId } = req.params;
+    const { taskId } = req.params;
+    // Get projectId from task
+    const taskResProject = await db.query('SELECT project_id FROM tasks WHERE id = $1', [taskId]);
+    if (!taskResProject.rows.length) return res.status(404).json({ message: 'Task not found' });
+    const projectId = taskResProject.rows[0].project_id;
+    const userId = req.user.id;
+    if (!(await hasTaskPermission(userId, projectId, taskId))) {
+      return res.status(403).json({ message: 'Not authorized to modify checklist.' });
+    }
+    const { itemId } = req.params;
     const { completed, text } = req.body;
 
-    const taskRes = await db.query('SELECT checklist FROM tasks WHERE id = $1', [taskId]);
-    if (taskRes.rows.length === 0) {
+    // Checklist query
+    const taskResChecklist = await db.query('SELECT checklist FROM tasks WHERE id = $1', [taskId]);
+    if (taskResChecklist.rows.length === 0) {
       return res.status(404).json({ message: 'Task not found' });
     }
-
-    let checklist = taskRes.rows[0].checklist;
+    let checklist = taskResChecklist.rows[0].checklist;
     if (typeof checklist === 'string') {
       try {
         checklist = JSON.parse(checklist);
@@ -361,14 +413,23 @@ exports.updateChecklistItem = async (req, res) => {
 // Delete checklist item
 exports.deleteChecklistItem = async (req, res) => {
   try {
-    const { taskId, itemId } = req.params;
+    const { taskId } = req.params;
+    // Get projectId from task
+    const taskResProject = await db.query('SELECT project_id FROM tasks WHERE id = $1', [taskId]);
+    if (!taskResProject.rows.length) return res.status(404).json({ message: 'Task not found' });
+    const projectId = taskResProject.rows[0].project_id;
+    const userId = req.user.id;
+    if (!(await hasTaskPermission(userId, projectId, taskId))) {
+      return res.status(403).json({ message: 'Not authorized to modify checklist.' });
+    }
+    const { itemId } = req.params;
 
-    const taskRes = await db.query('SELECT checklist FROM tasks WHERE id = $1', [taskId]);
-    if (taskRes.rows.length === 0) {
+    // Checklist query
+    const taskResChecklist = await db.query('SELECT checklist FROM tasks WHERE id = $1', [taskId]);
+    if (taskResChecklist.rows.length === 0) {
       return res.status(404).json({ message: 'Task not found' });
     }
-
-    let checklist = taskRes.rows[0].checklist;
+    let checklist = taskResChecklist.rows[0].checklist;
     if (typeof checklist === 'string') {
       try {
         checklist = JSON.parse(checklist);
@@ -398,6 +459,14 @@ exports.deleteChecklistItem = async (req, res) => {
 exports.uploadTaskFile = async (req, res) => {
   try {
     const { taskId } = req.params;
+    // Get projectId from task
+    const taskResProject = await db.query('SELECT project_id FROM tasks WHERE id = $1', [taskId]);
+    if (!taskResProject.rows.length) return res.status(404).json({ message: 'Task not found' });
+    const projectId = taskResProject.rows[0].project_id;
+    const userId = req.user.id;
+    if (!(await hasTaskPermission(userId, projectId, taskId))) {
+      return res.status(403).json({ message: 'Not authorized to upload files.' });
+    }
     const files = req.files || [];
 
     if (files.length === 0) {
@@ -448,7 +517,16 @@ exports.getTaskAttachments = async (req, res) => {
 // Delete task attachment
 exports.deleteTaskAttachment = async (req, res) => {
   try {
-    const { taskId, attachmentId } = req.params;
+    const { taskId } = req.params;
+    // Get projectId from task
+    const taskResProject = await db.query('SELECT project_id FROM tasks WHERE id = $1', [taskId]);
+    if (!taskResProject.rows.length) return res.status(404).json({ message: 'Task not found' });
+    const projectId = taskResProject.rows[0].project_id;
+    const userId = req.user.id;
+    if (!(await hasTaskPermission(userId, projectId, taskId))) {
+      return res.status(403).json({ message: 'Not authorized to delete attachments.' });
+    }
+    const { attachmentId } = req.params;
 
     const result = await db.query(
       'DELETE FROM task_attachments WHERE id = $1 AND task_id = $2 RETURNING *',
@@ -538,6 +616,12 @@ exports.addTaskComment = async (req, res) => {
 exports.reorderTasks = async (req, res) => {
   try {
     const { projectId } = req.params;
+    const userId = req.user.id;
+    // Only project owner can reorder tasks
+    const projectOwner = await db.query('SELECT created_by FROM projects WHERE id = $1', [projectId]);
+    if (!projectOwner.rows.length || projectOwner.rows[0].created_by !== userId) {
+      return res.status(403).json({ message: 'Only the project owner can reorder tasks.' });
+    }
     const { taskIds } = req.body; // Array of task IDs in new order
     
     // Update the order of tasks
@@ -559,6 +643,14 @@ exports.reorderTasks = async (req, res) => {
 exports.assignTask = async (req, res) => {
   try {
     const { taskId } = req.params;
+    // Get projectId from task
+    const taskResProject = await db.query('SELECT project_id FROM tasks WHERE id = $1', [taskId]);
+    if (!taskResProject.rows.length) return res.status(404).json({ message: 'Task not found' });
+    const projectId = taskResProject.rows[0].project_id;
+    const userId = req.user.id;
+    if (!(await hasTaskPermission(userId, projectId, taskId))) {
+      return res.status(403).json({ message: 'Not authorized to assign this task.' });
+    }
     const { assigned_to } = req.body;
     
     // Handle assigned_to - convert empty string to null
@@ -630,6 +722,14 @@ exports.assignTask = async (req, res) => {
 exports.deleteTask = async (req, res) => {
   try {
     const { taskId } = req.params;
+    // Get projectId from task
+    const taskResProject = await db.query('SELECT project_id FROM tasks WHERE id = $1', [taskId]);
+    if (!taskResProject.rows.length) return res.status(404).json({ message: 'Task not found' });
+    const projectId = taskResProject.rows[0].project_id;
+    const userId = req.user.id;
+    if (!(await hasTaskPermission(userId, projectId, taskId))) {
+      return res.status(403).json({ message: 'Not authorized to delete this task.' });
+    }
     
     // Delete task attachments first
     await db.query('DELETE FROM task_attachments WHERE task_id = $1', [taskId]);

@@ -115,7 +115,7 @@ const CommentThread = ({
     return (
       <div
         key={comment._id || comment.id}
-        className={`group flex gap-3 mb-4 bg-white dark:bg-gray-800 rounded-2xl shadow border border-gray-100 dark:border-gray-700 p-4 ${depth > 0 ? 'ml-10' : ''}`}
+        className={`group flex flex-col sm:flex-row gap-2 sm:gap-3 p-2 sm:p-3 items-start`}
         style={{ position: 'relative' }}
       >
         {/* Avatar */}
@@ -123,7 +123,7 @@ const CommentThread = ({
           <Avatar
             src={comment.author?.profilePicture || comment.author?.photo || `https://ui-avatars.com/api/?name=${comment.author?.name?.charAt(0) || 'U'}`}
             alt={comment.author?.name || 'Unknown User'}
-            className="w-10 h-10 border-2 border-white shadow-md"
+            className="w-8 h-8 border-2 border-white shadow-md"
             style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.07)' }}
           />
         </div>
@@ -152,7 +152,7 @@ const CommentThread = ({
               </span>
             </div>
             {/* Content */}
-            <div className="text-gray-800 dark:text-gray-100 text-[15px] leading-relaxed whitespace-pre-wrap break-words mb-2">
+            <div className="text-gray-800 dark:text-gray-100 text-xs leading-relaxed whitespace-pre-line break-words mb-2">
               {comment.content}
             </div>
             {/* Attachments */}
@@ -176,7 +176,7 @@ const CommentThread = ({
           </div>
           {/* Nested replies */}
           {hasReplies && canShowMoreReplies && (
-            <div className="mt-2 border-l-2 border-gray-200 pl-4">
+            <div className="mt-2 border-l-2 border-gray-200 pl-4 sm:ml-10">
               {comment.replies.map(reply => renderComment(reply, depth + 1))}
             </div>
           )}

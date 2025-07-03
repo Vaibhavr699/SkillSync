@@ -75,11 +75,14 @@ const FileUpload = ({
     setUploading(false);
     setPendingFiles([]);
     setSelectedFiles([]);
-    if (onUploadComplete) onUploadComplete();
+    if (onUploadComplete) onUploadComplete(pendingFiles);
   };
 
   const handleChange = (e) => {
     handleFiles(e.target.files);
+    if (isProfilePhoto && e.target.files && e.target.files.length > 0) {
+      setTimeout(() => handleSave(), 0);
+    }
   };
 
   const handleClick = () => {

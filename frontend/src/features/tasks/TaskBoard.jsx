@@ -454,118 +454,138 @@ const TaskBoard = () => {
         onDragEnd={handleDragEnd}
         onDragOver={handleDragOver}
       >
-        <Box sx={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', 
-          gap: 3,
-          minHeight: '600px'
-        }}>
-          {statusColumns.map((column) => {
-            const columnTasks = filteredTasks(column.id);
-            const isOverLimit = columnTasks.length > column.limit;
-            
-            return (
-              <Paper 
-                key={column.id} 
-                sx={{ 
-                  p: 2, 
-                  bgcolor: { xs: column.color, dark: '#23234f' },
-                  border: isOverLimit ? '2px solid #f44336' : { xs: '1px solid #e0e0e0', dark: '1px solid #3f3f7f' },
-                  color: { xs: 'inherit', dark: '#fff' },
-                  position: 'relative',
-                  boxShadow: 3,
-                }}
-              >
-                <Box sx={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'center', 
-                  mb: 2 
-                }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    {column.icon}
-                    <Typography variant="subtitle1" fontWeight="bold" sx={{ color: { xs: 'inherit', dark: '#fff' } }}>
-                      {column.title}
-                    </Typography>
-                  </Box>
-                  <Badge 
-                    badgeContent={columnTasks.length} 
-                    color={isOverLimit ? 'error' : 'primary'}
-                    max={999}
-                    sx={{
-                      '& .MuiBadge-badge': {
-                        backgroundColor: { xs: undefined, dark: '#3949ab' },
-                        color: { xs: undefined, dark: '#fff' },
-                        fontWeight: 700,
-                      }
-                    }}
-                  >
-                    <Chip 
-                      label={`${columnTasks.length}/${column.limit}`} 
-                      size="small" 
-                      variant="outlined"
-                      color={isOverLimit ? 'error' : 'default'}
+        {/* Responsive Kanban Board: grid that wraps columns to new rows based on screen size */}
+        <Box
+          sx={{
+            width: '100%',
+            maxWidth: '100vw',
+            pb: 4,
+            mb: 2,
+          }}
+        >
+          <Box
+            sx={{
+              display: 'grid',
+              gap: 3,
+              minHeight: '600px',
+              gridTemplateColumns: {
+                xs: '1fr',
+                sm: 'repeat(2, 1fr)',
+                md: 'repeat(3, 1fr)',
+                lg: 'repeat(4, 1fr)',
+              },
+            }}
+          >
+            {statusColumns.map((column) => {
+              const columnTasks = filteredTasks(column.id);
+              const isOverLimit = columnTasks.length > column.limit;
+              return (
+                <Paper
+                  key={column.id}
+                  sx={{
+                    p: 1.2,
+                    bgcolor: { xs: column.color, dark: '#23234f' },
+                    border: isOverLimit ? '2px solid #f44336' : { xs: '1px solid #e0e0e0', dark: '1px solid #3f3f7f' },
+                    color: { xs: 'inherit', dark: '#fff' },
+                    position: 'relative',
+                    boxShadow: 3,
+                    minWidth: 0,
+                    maxWidth: 500,
+                    width: '100%',
+                    borderRadius: 3,
+                    transition: 'box-shadow 0.2s',
+                  }}
+                >
+                  <Box sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    mb: 2,
+                  }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      {column.icon}
+                      <Typography variant="subtitle1" fontWeight="bold" sx={{ color: { xs: 'inherit', dark: '#fff' } }}>
+                        {column.title}
+                      </Typography>
+                    </Box>
+                    <Badge
+                      badgeContent={columnTasks.length}
+                      color={isOverLimit ? 'error' : 'primary'}
+                      max={999}
                       sx={{
-                        backgroundColor: { xs: undefined, dark: '#23234f' },
-                        color: { xs: undefined, dark: '#fff' },
-                        borderColor: { xs: undefined, dark: '#3f3f7f' },
-                        fontWeight: 700,
+                        '& .MuiBadge-badge': {
+                          backgroundColor: { xs: undefined, dark: '#3949ab' },
+                          color: { xs: undefined, dark: '#fff' },
+                          fontWeight: 700,
+                        },
                       }}
-                    />
-                  </Badge>
-                </Box>
-
-                {isOverLimit && (
-                  <Alert severity="warning" sx={{ mb: 2, fontSize: '0.75rem' }}>
-                    Column limit exceeded! Consider moving tasks.
-                  </Alert>
-                )}
-
-                {/* Droppable area */}
-                <DroppableColumn id={column.id} activeId={activeId}>
-                  {loading ? (
-                    <Box sx={{ space: 1 }}>
-                      {[1, 2, 3].map((i) => (
-                        <Skeleton key={i} variant="rectangular" height={120} sx={{ mb: 1, borderRadius: 1 }} />
-                      ))}
-                    </Box>
-                  ) : columnTasks.length === 0 ? (
-                    <Box sx={{ 
-                      textAlign: 'center', 
-                      color: 'text.disabled', 
-                      py: 4,
-                      border: '2px dashed #e0e0e0',
-                      borderRadius: 1,
-                      bgcolor: 'background.paper'
-                    }}>
-                      <Typography variant="body2">No tasks in this column</Typography>
-                      <Typography variant="caption">Drop tasks here</Typography>
-                    </Box>
-                  ) : (
-                    columnTasks.map((task) => (
-                      <DraggableTaskCard
-                        key={task.id}
-                        task={task}
-                        onEdit={user?.role === 'company' ? () => {
-                          setSelectedTask(task);
-                          setOpenTaskForm(true);
-                        } : undefined}
-                        onDelete={user?.role === 'company' ? () => handleDeleteTask(task) : undefined}
-                        userRole={user?.role}
+                    >
+                      <Chip
+                        label={`${columnTasks.length}/${column.limit}`}
+                        size="small"
+                        variant="outlined"
+                        color={isOverLimit ? 'error' : 'default'}
+                        sx={{
+                          backgroundColor: { xs: undefined, dark: '#23234f' },
+                          color: { xs: undefined, dark: '#fff' },
+                          borderColor: { xs: undefined, dark: '#3f3f7f' },
+                          fontWeight: 700,
+                        }}
                       />
-                    ))
+                    </Badge>
+                  </Box>
+                  {isOverLimit && (
+                    <Alert severity="warning" sx={{ mb: 2, fontSize: '0.75rem' }}>
+                      Column limit exceeded! Consider moving tasks.
+                    </Alert>
                   )}
-                </DroppableColumn>
-              </Paper>
-            );
-          })}
+                  {/* Droppable area */}
+                  <DroppableColumn id={column.id} activeId={activeId}>
+                    {loading ? (
+                      <Box sx={{ space: 1 }}>
+                        {[1, 2, 3].map((i) => (
+                          <Skeleton key={i} variant="rectangular" height={120} sx={{ mb: 1, borderRadius: 1 }} />
+                        ))}
+                      </Box>
+                    ) : columnTasks.length === 0 ? (
+                      <Box
+                        sx={{
+                          textAlign: 'center',
+                          color: 'text.disabled',
+                          py: 4,
+                          border: '2px dashed #e0e0e0',
+                          borderRadius: 1,
+                          bgcolor: 'background.paper',
+                        }}
+                      >
+                        <Typography variant="body2">No tasks in this column</Typography>
+                        <Typography variant="caption">Drop tasks here</Typography>
+                      </Box>
+                    ) : (
+                      columnTasks.map((task) => (
+                        <DraggableTaskCard
+                          key={task.id}
+                          task={task}
+                          onEdit={user?.role === 'company' ? () => {
+                            setSelectedTask(task);
+                            setOpenTaskForm(true);
+                          } : undefined}
+                          onDelete={user?.role === 'company' ? () => handleDeleteTask(task) : undefined}
+                          userRole={user?.role}
+                        />
+                      ))
+                    )}
+                  </DroppableColumn>
+                </Paper>
+              );
+            })}
+          </Box>
         </Box>
-
         {/* Drag Overlay */}
         <DragOverlay>
           {activeId ? (
-            <TaskCard 
-              task={tasks[projectId]?.find(t => t.id === activeId)}
+            <TaskCard
+              task={tasks[projectId]?.find((t) => t.id === activeId)}
               onEdit={() => {}}
               onDelete={() => {}}
             />

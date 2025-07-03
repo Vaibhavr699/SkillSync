@@ -90,16 +90,22 @@ const createTaskAssignedNotification = async (recipientId, senderId, taskId, tas
   );
 };
 
-const createApplicationStatusNotification = async (recipientId, senderId, projectId, projectTitle, status) => {
-  const message = status === 'accepted' 
-    ? `Your application for "${projectTitle}" has been accepted!`
-    : `Your application for "${projectTitle}" was not selected.`;
-  
+const createApplicationStatusNotification = async (recipientId, senderId, projectId, projectTitle, status, companyName, feedback) => {
+  // Enhanced message as JSON string
+  const messageObj = {
+    projectTitle,
+    companyName,
+    feedback,
+    link: `/dashboard/projects/${projectId}`,
+    text: status === 'accepted'
+      ? `Congratulations! Your application for "${projectTitle}" at "${companyName}" has been accepted.`
+      : `Your application for "${projectTitle}" at "${companyName}" was not selected.`
+  };
   return createNotification(
     recipientId,
     senderId,
     `application_${status}`,
-    message,
+    JSON.stringify(messageObj),
     'project',
     projectId
   );

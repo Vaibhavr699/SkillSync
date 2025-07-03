@@ -1,4 +1,4 @@
-const { registerUser, loginUser } = require('../services/auth.service');
+const { registerUser, loginUser, verifyAdminOtp } = require('../services/auth.service');
 const { sendPasswordResetEmail } = require('../services/email.service');
 const { generateToken } = require('../config/jwt');
 const jwt = require('jsonwebtoken');
@@ -58,8 +58,9 @@ exports.verifyEmail = async (req, res) => {
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
-    const { accessToken, refreshToken, user } = await loginUser(email, password);
-    
+    const loginResult = await loginUser(email, password);
+    // Always return normal login result (no 2fa step)
+    const { accessToken, refreshToken, user } = loginResult;
     res.status(200).json({
       accessToken,
       refreshToken,

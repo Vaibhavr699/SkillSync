@@ -75,6 +75,7 @@ const ApplicationForm = ({
       toast.success('Application submitted successfully!');
     } catch (err) {
       setSubmitError(err?.message || (typeof err === 'string' ? err : JSON.stringify(err)));
+      toast.error(err?.message || (typeof err === 'string' ? err : 'Failed to submit application.'));
     }
   };
 

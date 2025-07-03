@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import { Box, CssBaseline, Toolbar } from '@mui/material';
 import Navbar from '../components/common/Navbar';
 import Sidebar from '../components/common/Sidebar';
+import MobileSidebar from '../components/common/MobileSidebar';
 import { useTheme } from '@mui/material/styles';
 
 const drawerWidth = 240;
@@ -19,15 +20,14 @@ const MainLayout = () => {
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
       <CssBaseline />
 
-      {/* Navbar */}
-      <Navbar
-        handleDrawerToggle={handleDrawerToggle}
-        darkMode={false} // or pass from props/context
-        toggleDarkMode={() => {}}
-      />
+      {/* Navbar with hamburger menu */}
+      <Navbar onSidebarToggle={() => setMobileOpen(true)} />
 
-      {/* Sidebar */}
-      <Sidebar mobileOpen={mobileOpen} handleDrawerToggle={handleDrawerToggle} />
+      {/* Sidebar for large screens */}
+      <Sidebar />
+
+      {/* Mobile Sidebar for small/medium screens */}
+      <MobileSidebar open={mobileOpen} onClose={() => setMobileOpen(false)} />
 
       {/* Main content area */}
       <Box

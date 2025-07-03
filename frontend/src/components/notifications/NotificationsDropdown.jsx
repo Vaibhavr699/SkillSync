@@ -16,12 +16,12 @@ import {
   EyeIcon,
   ClockIcon
 } from '@heroicons/react/24/outline';
-import { Menu } from '@mui/material';
 
 const NotificationsDropdown = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const dropdownRef = useRef(null);
+  const buttonRef = useRef(null);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   
@@ -46,7 +46,8 @@ const NotificationsDropdown = () => {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target) &&
+          buttonRef.current && !buttonRef.current.contains(event.target)) {
         setIsOpen(false);
       }
     };
@@ -119,6 +120,16 @@ const NotificationsDropdown = () => {
     return date.toLocaleDateString();
   };
 
+  const formatExactDateTime = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleString('en-IN', {
+      day: '2-digit', month: '2-digit', year: 'numeric',
+      hour: '2-digit', minute: '2-digit', second: '2-digit',
+      hour12: false,
+      timeZone: 'Asia/Kolkata'
+    });
+  };
+
   const getNotificationTitle = (notification) => {
     switch (notification.type) {
       case 'task_assigned':
@@ -138,11 +149,22 @@ const NotificationsDropdown = () => {
     }
   };
 
+  const parseNotificationMessage = (notification) => {
+    if (["application_accepted", "application_rejected"].includes(notification.type)) {
+      try {
+        return JSON.parse(notification.message);
+      } catch {
+        return { text: notification.message };
+      }
+    }
+    return { text: notification.message };
+  };
+
   return (
     <div className="relative" ref={dropdownRef}>
       {/* Notification Bell Button */}
       <button
-        ref={dropdownRef}
+        ref={buttonRef}
         onClick={handleToggle}
         className="relative focus:outline-none"
         aria-label="Notifications"
@@ -155,27 +177,15 @@ const NotificationsDropdown = () => {
         )}
       </button>
 
-      {/* Dropdown */}
+      {/* Custom Dropdown */}
       {isOpen && (
-        <Menu
-          anchorEl={dropdownRef.current}
-          open={isOpen}
-          onClose={() => setIsOpen(false)}
-          PaperProps={{
-            elevation: 3,
-            sx: {
-              minWidth: 320,
-              maxWidth: 400,
-              maxHeight: 500,
-              bgcolor: { xs: '#fff', dark: '#23234f' },
-              color: { xs: 'inherit', dark: '#fff' },
-              boxShadow: 6,
-            }
-          }}
+        <div
+          className="absolute right-0 mt-2 w-80 max-w-xs max-h-[500px] bg-white dark:bg-indigo-950 text-black dark:text-white rounded-xl shadow-2xl border border-gray-100 dark:border-indigo-800 z-50 flex flex-col"
+          style={{ minWidth: 320 }}
         >
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-gray-100">
-            <h3 className="text-lg font-semibold text-gray-900">Notifications</h3>
+          <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-indigo-800">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Notifications</h3>
             <div className="flex items-center gap-2">
               {unreadCount > 0 && (
                 <button
@@ -211,33 +221,51 @@ const NotificationsDropdown = () => {
                 <p className="text-xs">You're all caught up!</p>
               </div>
             ) : (
-              <div className="divide-y divide-gray-100">
-                {notifications.map((notification) => (
+              <div className="divide-y divide-gray-100 dark:divide-indigo-800">
+                {notifications.map((notification) => {
+                  const msg = parseNotificationMessage(notification);
+                  return (
                   <div
                     key={notification.id}
                     onClick={() => handleNotificationClick(notification)}
-                    className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors duration-150 flex items-center gap-3
-                      ${!notification.is_read ? 'bg-blue-50 border-l-4 border-blue-500' : ''}
+                      className={`p-4 hover:bg-gray-50 dark:hover:bg-indigo-900 cursor-pointer transition-colors duration-150 flex items-center gap-3
+                        ${!notification.is_read ? 'bg-blue-50 dark:bg-indigo-800 border-l-4 border-blue-500 dark:border-indigo-400' : ''}
                       ${notification.type === 'application_accepted' ? 'border-l-4 border-green-500' : ''}
                       ${notification.type === 'application_rejected' ? 'border-l-4 border-red-500' : ''}`}
                   >
                     <NotificationIcon type={notification.type} className="w-7 h-7 flex-shrink-0" />
                     <div className="flex-1">
                       <div className="font-semibold">{getNotificationTitle(notification)}</div>
-                      <div className="text-sm text-gray-700">
-                        {notification.type === 'application_accepted' && (
-                          <span>
-                            <b>Your application was <span className="text-green-600">accepted</span>!</b>
-                            {notification.projectTitle && <> for <b>{notification.projectTitle}</b></>}
+                        <div className="text-sm text-gray-700 dark:text-gray-200">
+                          {['application_accepted', 'application_rejected'].includes(notification.type) ? (
+                            <>
+                              <div>{msg.text}</div>
+                              {msg.projectTitle && (
+                                <div className="mt-0.5">
+                                  <b>Project:</b>{' '}
+                                  <span
+                                    className="font-bold text-indigo-700 dark:text-indigo-300 cursor-pointer hover:underline"
+                                    onClick={e => {
+                                      e.stopPropagation();
+                                      navigate(msg.link || `/dashboard/projects/${notification.entity_id}`);
+                                      setIsOpen(false);
+                                    }}
+                                  >
+                                    {msg.projectTitle}
                           </span>
+                                </div>
                         )}
-                        {notification.type === 'application_rejected' && (
-                          <span>
-                            <b>Your application was <span className="text-red-600">rejected</span>.</b>
-                            {notification.projectTitle && <> for <b>{notification.projectTitle}</b></>}
-                          </span>
-                        )}
-                        {!['application_accepted', 'application_rejected'].includes(notification.type) && (
+                              {msg.companyName && (
+                                <div className="mt-0.5"><b>Company:</b> {msg.companyName}</div>
+                              )}
+                              {msg.feedback && (
+                                <div className="mt-0.5"><b>Feedback:</b> <span className="italic">{msg.feedback}</span></div>
+                              )}
+                              <div className="text-xs text-gray-400 mt-1">
+                                <b>Applied at:</b> {formatExactDateTime(notification.created_at)}
+                              </div>
+                            </>
+                          ) : (
                           notification.message
                         )}
                       </div>
@@ -248,7 +276,7 @@ const NotificationsDropdown = () => {
                         className="ml-2 px-3 py-1 rounded bg-indigo-100 hover:bg-indigo-200 text-indigo-700 text-xs font-semibold"
                         onClick={e => {
                           e.stopPropagation();
-                          navigate(`/dashboard/projects/${notification.entity_id}`);
+                            navigate(msg.link || `/dashboard/projects/${notification.entity_id}`);
                           setIsOpen(false);
                         }}
                       >
@@ -256,26 +284,12 @@ const NotificationsDropdown = () => {
                       </button>
                     )}
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
-
-          {/* Footer */}
-          {notifications.length > 0 && (
-            <div className="p-3 border-t border-gray-100 bg-gray-50 rounded-b-lg">
-              <button
-                onClick={() => {
-                  navigate('/dashboard/notifications');
-                  setIsOpen(false);
-                }}
-                className="w-full text-center text-sm text-blue-600 hover:text-blue-800 font-medium"
-              >
-                View all notifications
-              </button>
             </div>
-          )}
-        </Menu>
       )}
     </div>
   );

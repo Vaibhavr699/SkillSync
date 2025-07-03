@@ -401,6 +401,17 @@ const getAllSkills = async (req, res) => {
   }
 };
 
+// Add getUserImages controller
+const getUserImages = async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const images = await db.query('SELECT url FROM files WHERE uploaded_by = $1 ORDER BY id DESC', [userId]);
+    res.status(200).json(images.rows);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch images' });
+  }
+};
+
 // Export all controllers with expected names
 module.exports = {
   getUserProfile: getProfile,
@@ -415,5 +426,6 @@ module.exports = {
   searchUsers,
   getAllUsers,
   updateSkills,
-  getAllSkills
+  getAllSkills,
+  getUserImages
 };

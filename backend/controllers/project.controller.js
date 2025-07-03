@@ -428,14 +428,23 @@ exports.updateApplicationStatus = async (req, res) => {
         ]);
       }
 
-      // Create notification using the new service
+      // Fetch company name
+      let companyName = '';
+      try {
+        const companyRes = await db.query('SELECT name FROM user_profiles WHERE user_id = $1', [userId]);
+        if (companyRes.rows.length) companyName = companyRes.rows[0].name;
+      } catch {}
+
+      // Create enhanced notification
       try {
         await createApplicationStatusNotification(
           application.rows[0].freelancer_id,
           userId,
           projectId,
           project.rows[0].title,
-          'accepted'
+          'accepted',
+          companyName,
+          feedback
         );
       } catch (notificationError) {
         console.error('Failed to create application accepted notification:', notificationError);
@@ -452,14 +461,22 @@ exports.updateApplicationStatus = async (req, res) => {
         );
       }
     } else {
-      // Create notification using the new service
+      // Fetch company name
+      let companyName = '';
+      try {
+        const companyRes = await db.query('SELECT name FROM user_profiles WHERE user_id = $1', [userId]);
+        if (companyRes.rows.length) companyName = companyRes.rows[0].name;
+      } catch {}
+      // Create enhanced notification
       try {
         await createApplicationStatusNotification(
           application.rows[0].freelancer_id,
           userId,
           projectId,
           project.rows[0].title,
-          'rejected'
+          'rejected',
+          companyName,
+          feedback
         );
       } catch (notificationError) {
         console.error('Failed to create application rejected notification:', notificationError);

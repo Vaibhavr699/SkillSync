@@ -85,7 +85,7 @@ const ProjectFilters = ({ initialFilters = {}, onApply, onCancel }) => {
                 name="status"
                 value={filters.status}
                 onChange={handleChange}
-                className="w-full rounded-lg border-gray-300 shadow-sm focus:border-black focus:ring-black text-sm bg-white"
+                className="w-full rounded-lg border-gray-300 shadow-sm focus:border-black focus:ring-black text-sm bg-white dark:bg-indigo-950 dark:text-white dark:border-indigo-700 dark:focus:border-indigo-400 dark:focus:ring-indigo-400"
               >
                 <option value="">All Statuses</option>
                 {statusOptions.filter(opt => opt).map(option => (
@@ -107,7 +107,7 @@ const ProjectFilters = ({ initialFilters = {}, onApply, onCancel }) => {
                 name="minBudget"
                 value={filters.minBudget}
                 onChange={handleChange}
-                className="w-full rounded-lg border-gray-300 shadow-sm focus:border-black focus:ring-black text-sm bg-white"
+                className="w-full rounded-lg border-gray-300 shadow-sm focus:border-black focus:ring-black text-sm bg-white dark:bg-indigo-950 dark:text-white dark:border-indigo-700 dark:focus:border-indigo-400 dark:focus:ring-indigo-400"
                 placeholder="₹0"
                 min="0"
               />
@@ -124,7 +124,7 @@ const ProjectFilters = ({ initialFilters = {}, onApply, onCancel }) => {
                 name="maxBudget"
                 value={filters.maxBudget}
                 onChange={handleChange}
-                className="w-full rounded-lg border-gray-300 shadow-sm focus:border-black focus:ring-black text-sm bg-white"
+                className="w-full rounded-lg border-gray-300 shadow-sm focus:border-black focus:ring-black text-sm bg-white dark:bg-indigo-950 dark:text-white dark:border-indigo-700 dark:focus:border-indigo-400 dark:focus:ring-indigo-400"
                 placeholder="No limit"
                 min="0"
               />
@@ -141,7 +141,7 @@ const ProjectFilters = ({ initialFilters = {}, onApply, onCancel }) => {
                 name="deadline"
                 value={filters.deadline}
                 onChange={handleChange}
-                className="w-full rounded-lg border-gray-300 shadow-sm focus:border-black focus:ring-black text-sm bg-white"
+                className="w-full rounded-lg border-gray-300 shadow-sm focus:border-black focus:ring-black text-sm bg-white dark:bg-indigo-950 dark:text-white dark:border-indigo-700 dark:focus:border-indigo-400 dark:focus:ring-indigo-400"
               />
             </div>
           </div>
@@ -160,8 +160,8 @@ const ProjectFilters = ({ initialFilters = {}, onApply, onCancel }) => {
                   onClick={() => toggleTag(tag)}
                   className={`px-3 py-2 text-sm rounded-lg border transition-colors duration-200 flex items-center ${
                     filters.tags.includes(tag)
-                      ? 'bg-black border-black text-white'
-                      : 'bg-white border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50'
+                      ? 'bg-black border-black text-white dark:bg-indigo-700 dark:border-indigo-700'
+                      : 'bg-white border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50 dark:bg-indigo-950 dark:border-indigo-700 dark:text-white dark:hover:bg-indigo-900'
                   }`}
                 >
                   {filters.tags.includes(tag) && (
@@ -178,7 +178,7 @@ const ProjectFilters = ({ initialFilters = {}, onApply, onCancel }) => {
             <button
               type="button"
               onClick={resetFilters}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-colors duration-200"
+              className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-colors duration-200 dark:bg-indigo-950 dark:text-white dark:border-indigo-700 dark:hover:bg-indigo-900 dark:focus:ring-indigo-400"
             >
               <XMarkIcon className="w-4 h-4 mr-2" />
               Clear All
@@ -186,7 +186,7 @@ const ProjectFilters = ({ initialFilters = {}, onApply, onCancel }) => {
             <button
               type="button"
               onClick={handleApply}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-colors duration-200"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-colors duration-200 dark:bg-indigo-700 dark:hover:bg-indigo-900 dark:focus:ring-indigo-400"
             >
               Apply Filters
             </button>
@@ -194,7 +194,7 @@ const ProjectFilters = ({ initialFilters = {}, onApply, onCancel }) => {
               <button 
                 type="button" 
                 onClick={onCancel} 
-                className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-colors duration-200"
+                className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-black transition-colors duration-200 dark:bg-indigo-950 dark:text-white dark:border-indigo-700 dark:hover:bg-indigo-900 dark:focus:ring-indigo-400"
               >
                 Cancel
               </button>

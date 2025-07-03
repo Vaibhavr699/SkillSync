@@ -11,7 +11,8 @@ const {
   deleteProfilePhoto,
   getUserById,
   searchUsers,
-  getAllSkills
+  getAllSkills,
+  getUserImages
 } = require('../controllers/user.controller.js');
 const auth = require('../middleware/auth');
 const upload = require('../middleware/upload');
@@ -50,5 +51,8 @@ router.get('/:userId/public', getPublicProfile);
 
 // GET all users (search)
 router.get('/', searchUsers);
+
+// GET all images for a user
+router.get('/:userId/images', auth, getUserImages);
 
 module.exports = router;

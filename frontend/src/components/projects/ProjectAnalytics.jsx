@@ -37,11 +37,11 @@ const ProjectAnalytics = ({ project }) => {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 w-full">
+    <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 w-full items-stretch overflow-x-auto">
       {/* Tasks per User */}
-      <div className="flex-1 bg-white rounded-lg shadow p-4 flex flex-col items-center min-w-[220px] max-w-xs mx-auto">
+      <div className="flex-1 bg-white rounded-lg shadow p-3 sm:p-4 md:p-6 flex flex-col items-center w-full max-w-full md:max-w-md lg:max-w-xs">
         <h3 className="text-base font-bold mb-2 text-center">Tasks per User</h3>
-        <div className="w-full flex justify-center">
+        <div className="w-full flex justify-center relative h-48 sm:h-56 md:h-64">
           <Bar
             data={{
               labels: safeTeam.map(u => u.name || u.email || u.id),
@@ -58,15 +58,15 @@ const ProjectAnalytics = ({ project }) => {
               plugins: { legend: { display: false } },
               maintainAspectRatio: false,
             }}
-            height={180}
-            width={220}
+            height={192}
+            width={320}
           />
         </div>
       </div>
       {/* Tasks by Status */}
-      <div className="flex-1 bg-white rounded-lg shadow p-4 flex flex-col items-center min-w-[220px] max-w-xs mx-auto">
+      <div className="flex-1 bg-white rounded-lg shadow p-3 sm:p-4 md:p-6 flex flex-col items-center w-full max-w-full md:max-w-md lg:max-w-xs">
         <h3 className="text-base font-bold mb-2 text-center">Tasks by Status</h3>
-        <div className="w-full flex justify-center">
+        <div className="w-full flex justify-center relative h-48 sm:h-56 md:h-64">
           <Pie
             data={{
               labels: statusLabels,
@@ -83,13 +83,13 @@ const ProjectAnalytics = ({ project }) => {
               plugins: { legend: { position: 'bottom' } },
               maintainAspectRatio: false,
             }}
-            height={180}
-            width={220}
+            height={192}
+            width={320}
           />
         </div>
       </div>
       {/* Time Spent per Task */}
-      <div className="flex-1 bg-white rounded-lg shadow p-4 flex flex-col items-center min-w-[220px] max-w-xs mx-auto">
+      <div className="flex-1 bg-white rounded-lg shadow p-3 sm:p-4 md:p-6 flex flex-col items-center w-full max-w-full md:max-w-md lg:max-w-xs">
         <h3 className="text-base font-bold mb-2 text-center">Time Spent per Task (hours)</h3>
         <div className="flex flex-col gap-2 mb-2 w-full">
           {safeTasks.map((task, idx) => (
@@ -106,7 +106,7 @@ const ProjectAnalytics = ({ project }) => {
             </div>
           ))}
         </div>
-        <div className="w-full flex justify-center">
+        <div className="w-full flex justify-center relative h-48 sm:h-56 md:h-64">
           <Bar
             data={{
               labels: safeTasks.map(t => t.title),
@@ -123,8 +123,8 @@ const ProjectAnalytics = ({ project }) => {
               plugins: { legend: { display: false } },
               maintainAspectRatio: false,
             }}
-            height={180}
-            width={220}
+            height={192}
+            width={320}
           />
         </div>
       </div>

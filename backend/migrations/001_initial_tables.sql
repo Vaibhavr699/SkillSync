@@ -137,12 +137,12 @@ CREATE TABLE IF NOT EXISTS notifications (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Tokens (for email verification and password reset)
+-- Tokens (for email verification, password reset, and admin 2FA)
 CREATE TABLE IF NOT EXISTS tokens (
   id SERIAL PRIMARY KEY,
   user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   token VARCHAR(255) NOT NULL,
-  type VARCHAR(20) NOT NULL CHECK (type IN ('email-verification', 'password-reset')),
+  type VARCHAR(20) NOT NULL CHECK (type IN ('email-verification', 'password-reset', 'admin-2fa')),
   expires_at TIMESTAMP NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

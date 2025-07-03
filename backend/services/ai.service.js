@@ -38,13 +38,18 @@ const askProjectQuestion = async (projectId, question) => {
       context += `- [Comment ${comment.id}] On ${comment.parent_type} ${comment.parent_id}: ${comment.content}\n`;
     });
 
-    // Prepare sources for UI
+    // Only include the 3 most recent project-level comments as sources
+    const projectComments = comments
+      .filter(comment => comment.parent_type === 'project')
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+      .slice(0, 3);
+
     let sources = [
       ...tasks.map(task => ({ type: 'task', id: task.id, title: task.title, snippet: task.description })),
-      ...comments.map(comment => ({
+      ...projectComments.map(comment => ({
         type: 'comment',
         id: comment.id,
-        title: `Comment on ${comment.parent_type} ${comment.parent_id}`,
+        title: `Comment on project ${comment.parent_id}`,
         snippet: comment.content.slice(0, 80)
       }))
     ];

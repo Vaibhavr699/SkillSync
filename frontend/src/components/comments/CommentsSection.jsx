@@ -221,9 +221,9 @@ const CommentsSection = ({ resourceType, resourceId, compact = false }) => {
     };
 
     return (
-      <div className={`relative ${depth > 0 ? 'ml-8 pl-4 border-l-2 border-gray-200 dark:border-gray-700' : ''}`} style={{ maxWidth: `calc(100% - ${depth * 2}rem)` }}>
-        <div className="group flex gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg transition-colors duration-200">
-          <Avatar src={comment.author?.photo} alt={comment.author?.name} className="w-10 h-10 mt-1 flex-shrink-0" />
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 p-2 sm:p-3 items-start">
+        <div className="flex items-center gap-3">
+          <Avatar src={comment.author?.photo} alt={comment.author?.name} className="w-8 h-8 mt-1 flex-shrink-0" />
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
               <span className="font-medium text-gray-900 dark:text-white">{comment.author?.name || 'Unknown User'}</span>
@@ -250,7 +250,7 @@ const CommentsSection = ({ resourceType, resourceId, compact = false }) => {
                 </div>
               </div>
             ) : (
-              <p className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap break-words">{comment.content}</p>
+              <p className="text-gray-800 dark:text-gray-200 whitespace-pre-line break-words">{comment.content}</p>
             )}
             <div className="flex items-center gap-4 mt-2">
               <button onClick={() => { setIsReplying(!isReplying); setIsEditing(false); }} className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-blue-600 transition-colors">

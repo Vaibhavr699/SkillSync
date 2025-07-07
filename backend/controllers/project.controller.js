@@ -12,6 +12,10 @@ exports.createProject = async (req, res) => {
     const userId = req.user.id;
     const { title, description, tags, budget, deadline } = req.body;
 
+    // Get company_id of creator
+    const userRes = await db.query('SELECT company_id FROM users WHERE id = $1', [userId]);
+    const companyId = userRes.rows[0]?.company_id || null;
+
     // Parse tags if sent as JSON string
     let parsedTags = tags;
     if (typeof tags === 'string') {
@@ -33,9 +37,9 @@ exports.createProject = async (req, res) => {
     }
 
     const project = await db.query(
-      `INSERT INTO projects (title, description, tags, budget, deadline, created_by)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [title, description, parsedTags, budget, deadline, userId]
+      `INSERT INTO projects (title, description, tags, budget, deadline, created_by, company_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+      [title, description, parsedTags, budget, deadline, userId, companyId]
     );
 
     // Insert into project_files with correct columns
@@ -56,7 +60,9 @@ exports.createProject = async (req, res) => {
 // GET ALL PROJECTS
 exports.getProjects = async (req, res) => {
   try {
-    const { search, tag, status, minBudget, maxBudget, deadline } = req.query;
+    const { search, tag, status, minBudget, maxBudget, deadline, createdBy, company_id } = req.query;
+    const userRole = req.user?.role;
+    const userId = req.user?.id;
     let { page = 1, limit = 10 } = req.query;
     page = parseInt(page);
     limit = parseInt(limit);
@@ -103,6 +109,23 @@ exports.getProjects = async (req, res) => {
       query += ` AND deadline <= $${idx}`;
       params.push(deadline);
       idx++;
+    }
+    // ENFORCE: Company users only see their own projects
+    if (userRole === 'company') {
+      query += ` AND created_by = $${idx}`;
+      params.push(userId);
+      idx++;
+    } else {
+      if (createdBy) {
+        query += ` AND created_by = $${idx}`;
+        params.push(createdBy);
+        idx++;
+      }
+      if (company_id) {
+        query += ` AND company_id = $${idx}`;
+        params.push(company_id);
+        idx++;
+      }
     }
     // Count total
     const countQuery = `SELECT COUNT(*) FROM (${query}) AS count_sub`;
@@ -287,23 +310,28 @@ exports.getProjectApplications = async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user.id;
+    const userRole = req.user.role;
 
-    console.log('Fetching applications for project:', { projectId: id, userId });
+    // Get project and its company_id
+    const projectRes = await db.query("SELECT * FROM projects WHERE id = $1", [id]);
+    if (projectRes.rows.length === 0) {
+      return res.status(404).json({ message: "Project not found" });
+    }
+    const project = projectRes.rows[0];
 
-    // First check if project exists and user owns it
-    const project = await db.query(
-      "SELECT * FROM projects WHERE id = $1 AND created_by = $2",
-      [id, userId]
-    );
+    // Get requesting user's company_id
+    const userRes = await db.query('SELECT company_id FROM users WHERE id = $1', [userId]);
+    const userCompanyId = userRes.rows[0]?.company_id || null;
 
-    console.log('Project ownership check:', { 
-      found: project.rows.length > 0, 
-      projectOwner: project.rows[0]?.created_by,
-      requestingUser: userId 
-    });
-
-    if (project.rows.length === 0) {
-      console.log('Unauthorized access attempt');
+    // Allow if:
+    // - user is the creator
+    // - user is a company user and their company_id matches the project's company_id
+    if (
+      project.created_by === userId ||
+      (userRole === 'company' && project.company_id && userCompanyId && project.company_id === userCompanyId)
+    ) {
+      // Allowed
+    } else {
       return res.status(403).json({ message: "Unauthorized" });
     }
 
@@ -334,17 +362,6 @@ exports.getProjectApplications = async (req, res) => {
       [id]
     );
 
-    console.log('Applications query result:', { 
-      count: applications.rows.length,
-      applications: applications.rows.map(app => ({
-        id: app.id,
-        freelancer_id: app.freelancer_id,
-        name: app.name,
-        status: app.status,
-        applied_at: app.applied_at
-      }))
-    });
-
     // Format the applications data
     const formattedApplications = applications.rows.map(app => ({
       ...app,
@@ -359,15 +376,9 @@ exports.getProjectApplications = async (req, res) => {
       success_rate: 0
     }));
 
-    console.log('Sending formatted applications:', { count: formattedApplications.length });
     res.status(200).json(formattedApplications);
   } catch (error) {
     console.error('Error fetching project applications:', error);
-    console.error('Error details:', {
-      message: error.message,
-      stack: error.stack,
-      code: error.code
-    });
     res.status(500).json({ 
       message: "Server error fetching applications",
       error: process.env.NODE_ENV === 'development' ? error.message : undefined

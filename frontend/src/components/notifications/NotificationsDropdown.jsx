@@ -34,6 +34,11 @@ const NotificationsDropdown = () => {
     }
   }, [dispatch, user]);
 
+  // Debug: Log notifications whenever they change
+  useEffect(() => {
+    console.log('Notifications fetched:', notifications);
+  }, [notifications]);
+
   useEffect(() => {
     // Set up real-time notifications
     if (user) {

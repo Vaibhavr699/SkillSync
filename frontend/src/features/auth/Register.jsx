@@ -6,6 +6,22 @@ import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { useState } from 'react';
 
+// Password strength helper
+const getPasswordStrength = (password) => {
+  let score = 0;
+  if (!password) return { score, label: 'Too short', color: 'bg-gray-300' };
+  if (password.length >= 8) score++;
+  if (/[A-Z]/.test(password)) score++;
+  if (/[a-z]/.test(password)) score++;
+  if (/[0-9]/.test(password)) score++;
+  if (/[^A-Za-z0-9]/.test(password)) score++;
+  if (score <= 2) return { score, label: 'Weak', color: 'bg-red-400' };
+  if (score === 3) return { score, label: 'Fair', color: 'bg-yellow-400' };
+  if (score === 4) return { score, label: 'Good', color: 'bg-blue-400' };
+  if (score === 5) return { score, label: 'Strong', color: 'bg-green-500' };
+  return { score, label: 'Too short', color: 'bg-gray-300' };
+};
+
 const Register = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -23,7 +39,12 @@ const Register = () => {
     validationSchema: Yup.object({
       name: Yup.string().required('Name is required'),
       email: Yup.string().email('Invalid email address').required('Email is required'),
-      password: Yup.string().min(6, 'Password must be at least 6 characters').required('Password is required'),
+      password: Yup.string()
+        .matches(
+          /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/,
+          'Password must be at least 8 characters, include uppercase, lowercase, number, and special character'
+        )
+        .required('Password is required'),
       confirmPassword: Yup.string().oneOf([Yup.ref('password'), null], 'Passwords must match').required('Confirm password is required'),
       role: Yup.string().oneOf(['admin', 'company', 'freelancer'], 'Please select a valid role').required('Role is required'),
     }),
@@ -51,6 +72,8 @@ const Register = () => {
       }
     },
   });
+
+  const passwordStrength = getPasswordStrength(formik.values.password);
 
   return (
     <div className="fixed inset-0 flex items-center justify-center overflow-y-auto bg-[url('/authbg.jpg')] bg-cover bg-center before:content-[''] before:fixed before:inset-0 before:bg-[#0a2a5c]/90 before:-z-10 dark:before:bg-[#0a2a5c]/95">
@@ -100,6 +123,19 @@ const Register = () => {
             onBlur={formik.handleBlur}
             autoComplete="new-password"
           />
+          {/* Password strength meter */}
+          {formik.values.password && (
+            <div className="w-full flex flex-col gap-1 mb-1">
+              <div className="h-2 rounded transition-all duration-300" style={{ width: `${passwordStrength.score * 20}%` }}>
+                <div className={`h-2 rounded ${passwordStrength.color} transition-all duration-300`} style={{ width: '100%' }}></div>
+              </div>
+              <span className={`text-xs font-semibold ${
+                passwordStrength.score <= 2 ? 'text-red-500' : passwordStrength.score === 3 ? 'text-yellow-600' : passwordStrength.score === 4 ? 'text-blue-600' : 'text-green-600'
+              }`}>
+                {passwordStrength.label}
+              </span>
+            </div>
+          )}
           {formik.touched.password && formik.errors.password && (
             <span className="text-red-500 text-sm">{formik.errors.password}</span>
           )}

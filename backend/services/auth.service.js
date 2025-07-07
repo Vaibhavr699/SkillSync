@@ -15,11 +15,22 @@ const registerUser = async (email, password, role, name, skipVerification = fals
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(password, salt);
 
+  let companyId = null;
+  // If registering a company user, create/find company and set company_id
+  if (role === 'company') {
+    // Use company name as unique identifier (could be improved)
+    let companyRes = await db.query('SELECT id FROM companies WHERE name = $1', [name]);
+    if (companyRes.rows.length === 0) {
+      companyRes = await db.query('INSERT INTO companies (name) VALUES ($1) RETURNING id', [name]);
+    }
+    companyId = companyRes.rows[0].id;
+  }
+
   // Create user with verification status based on skipVerification
   const isVerified = skipVerification || role === 'admin';
   const newUser = await db.query(
-    'INSERT INTO users (email, password, role, is_verified) VALUES ($1, $2, $3, $4) RETURNING *',
-    [email, hashedPassword, role, isVerified]
+    'INSERT INTO users (email, password, role, is_verified, company_id) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+    [email, hashedPassword, role, isVerified, companyId]
   );
 
   // Create profile
@@ -29,7 +40,7 @@ const registerUser = async (email, password, role, name, skipVerification = fals
   );
 
   // Only send verification email if not skipping verification
-  if (!skipVerification && role !== 'admin') {
+  if (!skipVerification) {
     // Generate verification token
     const verificationToken = generateToken(newUser.rows[0].id, '1d');
     await db.query(
@@ -45,7 +56,8 @@ const registerUser = async (email, password, role, name, skipVerification = fals
     id: newUser.rows[0].id,
     email: newUser.rows[0].email,
     role: newUser.rows[0].role,
-    is_verified: newUser.rows[0].is_verified
+    is_verified: newUser.rows[0].is_verified,
+    company_id: newUser.rows[0].company_id
   };
 };
 

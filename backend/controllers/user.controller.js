@@ -412,6 +412,42 @@ const getUserImages = async (req, res) => {
   }
 };
 
+// PATCH /api/companies/:companyId/name
+const updateCompanyName = async (req, res) => {
+  try {
+    const { companyId } = req.params;
+    const { name } = req.body;
+    const userId = req.user.id;
+    // Only allow if user belongs to this company
+    const userRes = await db.query('SELECT company_id FROM users WHERE id = $1', [userId]);
+    if (!userRes.rows.length || userRes.rows[0].company_id != companyId) {
+      return res.status(403).json({ message: 'Forbidden' });
+    }
+    if (!name || name.trim() === '') {
+      return res.status(400).json({ message: 'Company name is required.' });
+    }
+    // Update company name
+    const result = await db.query('UPDATE companies SET name = $1 WHERE id = $2 RETURNING *', [name, companyId]);
+    res.status(200).json({ company: result.rows[0] });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
+// GET /api/companies/:companyId
+const getCompanyById = async (req, res) => {
+  try {
+    const { companyId } = req.params;
+    const result = await db.query('SELECT * FROM companies WHERE id = $1', [companyId]);
+    if (!result.rows.length) {
+      return res.status(404).json({ message: 'Company not found' });
+    }
+    res.status(200).json({ company: result.rows[0] });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
 // Export all controllers with expected names
 module.exports = {
   getUserProfile: getProfile,
@@ -427,5 +463,7 @@ module.exports = {
   getAllUsers,
   updateSkills,
   getAllSkills,
-  getUserImages
+  getUserImages,
+  updateCompanyName,
+  getCompanyById
 };

@@ -2,6 +2,7 @@ const db = require('../config/db');
 
 const createNotification = async (recipientId, senderId, type, message, entityType, entityId) => {
   try {
+    console.log('Creating notification:', { recipientId, type, message });
     const notification = await db.query(
       `INSERT INTO notifications 
        (recipient_id, sender_id, type, message, entity_type, entity_id) 

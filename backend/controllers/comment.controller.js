@@ -1,9 +1,11 @@
 const db = require('../config/db');
 const { createCommentNotification } = require('../services/notification.service');
+const { uploadToCloudinary, uploadFile } = require('../services/file.service');
 
 // Create a comment (project/task, supports nesting and file attachments)
 exports.createComment = async (req, res) => {
   try {
+    console.log('CreateComment payload:', req.body, req.files);
     const { parentId, entityId, entityType, content, replyTo } = req.body; // entityType: 'project' | 'task'
     const files = req.files || [];
     const userId = req.user.id;
@@ -26,12 +28,23 @@ exports.createComment = async (req, res) => {
     // Attach files if any
     const fileAttachments = [];
     for (const file of files) {
-      const fileResult = await db.query(
+      // Save file to storage and DB, get file record
+      const fileRecord = await uploadFile(file, userId);
+      // Link file to comment
+      await db.query(
         `INSERT INTO comment_files (comment_id, file_id)
-         VALUES ($1, $2) RETURNING *`,
-        [comment.id, file.id]
+         VALUES ($1, $2)`,
+        [comment.id, fileRecord.id]
       );
-      fileAttachments.push(fileResult.rows[0]);
+      // Fetch full file info
+      const fileInfoResult = await db.query(
+        `SELECT f.id, f.filename, f.url, f.size, f.mimetype
+         FROM files f WHERE f.id = $1`,
+        [fileRecord.id]
+      );
+      if (fileInfoResult.rows.length > 0) {
+        fileAttachments.push(fileInfoResult.rows[0]);
+      }
     }
 
     // Create notification for task comments (not for project comments or replies)
@@ -82,21 +95,22 @@ exports.createComment = async (req, res) => {
       }
     }
 
-    // NEW: Notification for replies to comments
-    if (replyTo) {
+    // Only check for parent comment if replyTo is present and not null/undefined
+    if (replyTo !== undefined && replyTo !== null && replyTo !== '') {
       try {
         // Get parent comment
         const parentCommentResult = await db.query('SELECT * FROM comments WHERE id = $1', [replyTo]);
-        if (parentCommentResult.rows.length > 0) {
-          const parentComment = parentCommentResult.rows[0];
-          if (parentComment.author_id !== userId) {
-            await createCommentNotification(
-              parentComment.author_id, // recipient
-              userId, // sender
-              entityId, // taskId or projectId
-              'You have a new reply to your comment.'
-            );
-          }
+        if (parentCommentResult.rows.length === 0) {
+          return res.status(400).json({ message: 'Parent comment (replyTo) not found' });
+        }
+        const parentComment = parentCommentResult.rows[0];
+        if (parentComment.author_id !== userId) {
+          await createCommentNotification(
+            parentComment.author_id, // recipient
+            userId, // sender
+            entityId, // taskId or projectId
+            'You have a new reply to your comment.'
+          );
         }
       } catch (notificationError) {
         console.error('Failed to create reply notification:', notificationError);
@@ -236,16 +250,17 @@ exports.getComments = async (req, res) => {
 // Update own comment
 exports.updateComment = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { commentId } = req.params;
     const userId = req.user.id;
+    console.log('Edit request for commentId:', commentId, 'by userId:', userId);
     // Check ownership
-    const commentResult = await db.query('SELECT * FROM comments WHERE id = $1', [id]);
+    const commentResult = await db.query('SELECT * FROM comments WHERE id = $1', [commentId]);
     if (commentResult.rows.length === 0) return res.status(404).json({ message: 'Comment not found' });
     if (commentResult.rows[0].author_id !== userId) return res.status(403).json({ message: 'Forbidden' });
     // Update
     const updated = await db.query(
       'UPDATE comments SET content = $1, updated_at = NOW(), is_edited = TRUE WHERE id = $2 RETURNING *',
-      [req.body.content, id]
+      [req.body.content, commentId]
     );
     res.json(updated.rows[0]);
   } catch (err) {
@@ -256,32 +271,16 @@ exports.updateComment = async (req, res) => {
 // Delete own comment
 exports.deleteComment = async (req, res) => {
   try {
-    const { projectId, commentId } = req.params;
+    const { commentId } = req.params;
     const userId = req.user.id;
     // Find the comment (could be top-level or any nested reply)
     let commentResult = await db.query('SELECT * FROM comments WHERE id = $1', [commentId]);
     if (commentResult.rows.length === 0) return res.status(404).json({ message: 'Comment not found' });
     let comment = commentResult.rows[0];
-    // Recursively find the top-level parent
-    let isProjectComment = false;
-    let current = comment;
-    while (current) {
-      if (current.parent_type === 'project' && String(current.parent_id) === String(projectId)) {
-        isProjectComment = true;
-        break;
-      } else if (current.parent_type === 'comment') {
-        const parentResult = await db.query('SELECT * FROM comments WHERE id = $1', [current.parent_id]);
-        if (parentResult.rows.length === 0) break;
-        current = parentResult.rows[0];
-      } else {
-        break;
-      }
-    }
-    if (!isProjectComment) return res.status(404).json({ message: 'Comment not found for this project' });
     if (comment.author_id !== userId) return res.status(403).json({ message: 'Forbidden' });
     // Helper: recursively delete all replies
     async function deleteRepliesRecursive(parentId) {
-      const replies = await db.query('SELECT id FROM comments WHERE parent_type = $1 AND parent_id = $2', ['comment', parentId]);
+      const replies = await db.query('SELECT id FROM comments WHERE reply_to = $1', [parentId]);
       for (const reply of replies.rows) {
         await deleteRepliesRecursive(reply.id);
         await db.query('DELETE FROM comment_files WHERE comment_id = $1', [reply.id]);
@@ -399,21 +398,32 @@ exports.getProjectComments = async (req, res) => {
   try {
     const projectId = req.params.id;
     console.log('Fetching comments for projectId:', projectId);
-    if (!projectId || isNaN(Number(projectId))) {
-      return res.status(400).json({ message: 'Invalid project id' });
-    }
-    // Fetch comments with author info
     const commentsResult = await db.query(
       `SELECT 
         c.*,
         up.name as author_name, 
-        up.photo as author_photo
+        up.photo as author_photo,
+        COALESCE(
+          json_agg(
+            DISTINCT jsonb_build_object(
+              'id', cf.file_id,
+              'filename', f.filename,
+              'url', f.url,
+              'size', f.size,
+              'mimetype', f.mimetype
+            )
+          ) FILTER (WHERE cf.file_id IS NOT NULL), '[]'::json
+        ) as attachments
       FROM comments c
       LEFT JOIN user_profiles up ON c.author_id = up.user_id
+      LEFT JOIN comment_files cf ON c.id = cf.comment_id
+      LEFT JOIN files f ON cf.file_id = f.id
       WHERE c.parent_type = $1 AND c.parent_id = $2
+      GROUP BY c.id, up.name, up.photo
       ORDER BY c.created_at ASC`,
       ['project', projectId]
     );
+    console.log('Number of comments fetched:', commentsResult.rows.length);
     // Map to camelCase and build flat array
     const allComments = commentsResult.rows.map(comment => ({
       _id: comment.id,
@@ -428,7 +438,7 @@ exports.getProjectComments = async (req, res) => {
         photo: comment.author_photo,
         profilePicture: comment.author_photo
       },
-      attachments: [], // Add attachment support if needed
+      attachments: Array.isArray(comment.attachments) && comment.attachments[0] ? comment.attachments : [],
       replies: []
     }));
     // Build nested structure
@@ -441,13 +451,11 @@ exports.getProjectComments = async (req, res) => {
       if (comment.replyTo) {
         const parent = commentMap.get(comment.replyTo);
         if (parent) {
-          // Ensure reply has createdAt/updatedAt
           comment.createdAt = comment.createdAt || new Date(0);
           comment.updatedAt = comment.updatedAt || comment.createdAt || new Date(0);
           parent.replies.push(comment);
         }
       } else {
-        // Ensure root comment has createdAt/updatedAt
         comment.createdAt = comment.createdAt || new Date(0);
         comment.updatedAt = comment.updatedAt || comment.createdAt || new Date(0);
         rootComments.push(comment);

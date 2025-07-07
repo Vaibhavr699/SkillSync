@@ -5,9 +5,11 @@ const auth = require('../middleware/auth');
 const roles = require('../middleware/roles');
 const upload = require('../middleware/upload');
 const taskRoutes = require('./task.routes');
-const { getProjectComments, createProjectComment, deleteComment } = require('../controllers/comment.controller.js');
+const { getComments, createProjectComment, deleteComment, updateComment } = require('../controllers/comment.controller.js');
+const { createComment } = require('../controllers/comment.controller');
+const { getProjectComments } = require('../controllers/comment.controller.js');
 
-router.post('/', auth, roles('company'), upload.array('files'), createProject);
+router.post('/', auth, roles('company', 'admin'), upload.array('files'), createProject);
 router.get('/', auth, getProjects);
 router.get('/:id', auth, getProjectDetails);
 router.post('/:id/apply', auth, roles('freelancer'), applyToProject);
@@ -21,7 +23,8 @@ router.delete('/:id', auth, roles('company'), deleteProject);
 router.patch('/:id/cancel', auth, roles('company'), cancelProject);
 router.use('/:projectId/tasks', taskRoutes);
 router.get('/:id/comments', auth, getProjectComments);
-router.post('/:id/comments', auth, createProjectComment);
+router.post('/:id/comments', auth, upload.array('files'), createComment);
 router.delete('/:id/comments/:commentId', auth, deleteComment);
+router.put('/:id/comments/:commentId', auth, updateComment);
 
 module.exports = router;

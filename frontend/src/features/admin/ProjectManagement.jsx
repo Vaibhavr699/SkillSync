@@ -101,13 +101,18 @@ const ProjectManagement = () => {
     totalBudget: 0
   });
 
+  // New filters
+  const [companyFilter, setCompanyFilter] = useState('');
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
+
   useEffect(() => {
     if (user?.role === 'company') {
-      dispatch(fetchProjects({ createdBy: user.id }));
+      dispatch(fetchProjects({ createdBy: user.id, search: searchTerm }));
     } else if (user?.role === 'admin') {
-      dispatch(fetchProjects()); // Fetch all projects for admin
+      dispatch(fetchProjects({ search: searchTerm }));
     }
-  }, [dispatch, user]);
+  }, [dispatch, user, searchTerm]);
 
   useEffect(() => {
     if (projects) {
@@ -139,11 +144,15 @@ const ProjectManagement = () => {
   // Filter and sort projects
   const filteredProjects = projects
     .filter(project => {
-      const matchesSearch = project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           project.tags?.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+      const matchesSearch =
+        (project.title?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+        (project.description?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+        (Array.isArray(project.tags) && project.tags.some(tag => (tag?.toLowerCase() || '').includes(searchTerm.toLowerCase())));
       const matchesStatus = !statusFilter || project.status === statusFilter;
-      return matchesSearch && matchesStatus;
+      const matchesCompany = !companyFilter || (project.company?.name || '').toLowerCase().includes(companyFilter.toLowerCase());
+      const matchesFromDate = !fromDate || new Date(project.createdAt || project.created_at) >= new Date(fromDate);
+      const matchesToDate = !toDate || new Date(project.createdAt || project.created_at) <= new Date(toDate);
+      return matchesSearch && matchesStatus && matchesCompany && matchesFromDate && matchesToDate;
     })
     .sort((a, b) => {
       let aValue, bValue;
@@ -278,6 +287,29 @@ const ProjectManagement = () => {
       case 'cancelled': return <Cancel />;
       default: return <Schedule />;
     }
+  };
+
+  const handleExportCSV = () => {
+    const csvRows = [
+      ['ID', 'Title', 'Company', 'Status', 'Budget', 'Deadline', 'Created At'],
+      ...filteredProjects.map(p => [
+        p.id,
+        p.title,
+        p.company?.name || '',
+        p.status,
+        p.budget,
+        p.deadline,
+        p.createdAt || p.created_at
+      ])
+    ];
+    const csvContent = csvRows.map(row => row.join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'projects.csv';
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   if (user?.role !== 'company' && user?.role !== 'admin') {
@@ -778,7 +810,7 @@ const ProjectManagement = () => {
           onClose={() => setEditDialog({ open: false, project: null })}
           onConfirm={handleEditProject}
           title="Edit Project"
-          content={<ProjectForm onSubmit={handleEditProject} project={editDialog.project} />}
+          content={<ProjectForm onSubmit={handleEditProject} initialValues={editDialog.project} submitText="Update Project" />}
         />
         <ConfirmationDialog
           open={deleteDialog.open}

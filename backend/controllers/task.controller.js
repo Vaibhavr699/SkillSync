@@ -819,3 +819,40 @@ exports.getTaskById = async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 };
+
+// Global search for tasks by title or assigned user
+exports.searchTasks = async (req, res) => {
+  try {
+    const { search, assignee } = req.query;
+    let query = `
+      SELECT t.*, 
+             up.name as assigned_to_name, 
+             up.photo as assigned_to_photo,
+             u.email as assigned_to_email
+      FROM tasks t
+      LEFT JOIN users u ON t.assigned_to = u.id
+      LEFT JOIN user_profiles up ON up.user_id = u.id
+      WHERE 1=1
+    `;
+    const params = [];
+    let idx = 1;
+
+    if (search) {
+      query += ` AND (t.title ILIKE $${idx} OR t.description ILIKE $${idx})`;
+      params.push(`%${search}%`);
+      idx++;
+    }
+    if (assignee) {
+      query += ` AND (t.assigned_to = $${idx} OR up.name ILIKE $${idx})`;
+      params.push(assignee, `%${assignee}%`);
+      idx++;
+    }
+
+    query += ' ORDER BY t.created_at DESC LIMIT 20';
+
+    const result = await db.query(query, params);
+    res.status(200).json(result.rows);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error searching tasks' });
+  }
+};

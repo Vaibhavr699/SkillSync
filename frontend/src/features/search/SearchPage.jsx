@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { 
   Box, 
   TextField, 
@@ -79,18 +80,25 @@ const SearchPage = () => {
   });
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
   const [projectFilters, setProjectFilters] = useState(initialProjectFilters);
-  const [userFilters, setUserFilters] = useState(initialUserFilters);
+  const { user } = useSelector(state => state.auth);
+  const [userFilters, setUserFilters] = useState(() => {
+    if (user?.role === 'company') {
+      return { ...initialUserFilters, role: 'freelancer' };
+    }
+    return initialUserFilters;
+  });
   const [taskFilters, setTaskFilters] = useState(initialTaskFilters);
   const [allTags, setAllTags] = useState([]);
   const [allUsers, setAllUsers] = useState([]);
   const [allSkills, setAllSkills] = useState([]);
   const [sortBy, setSortBy] = useState('relevance');
+  const [userSuggestions, setUserSuggestions] = useState([]);
 
   const tabLabels = [
-    `All (${results.users.length + results.projects.length + results.tasks.length})`,
-    `Users (${results.users.length})`,
-    `Projects (${results.projects.length})`,
-    `Tasks (${results.tasks.length})`
+    `All (${(results.users?.length || 0) + (results.projects?.length || 0) + (results.tasks?.length || 0)})`,
+    `Users (${results.users?.length || 0})`,
+    `Projects (${results.projects?.length || 0})`,
+    `Tasks (${results.tasks?.length || 0})`
   ];
 
   useEffect(() => {
@@ -109,6 +117,15 @@ const SearchPage = () => {
     }
     // eslint-disable-next-line
   }, [searchTerm, activeTab, projectFilters, userFilters, taskFilters, sortBy]);
+
+  useEffect(() => {
+    if (activeTab === 1 && searchTerm.trim()) {
+      api.get('/users', { params: { name: searchTerm.trim() } })
+        .then(res => setUserSuggestions(res.data || []));
+    } else {
+      setUserSuggestions([]);
+    }
+  }, [searchTerm, activeTab]);
 
   const performSearch = async () => {
     setLoading(true);
@@ -581,7 +598,7 @@ const SearchPage = () => {
           Search SkillSync
         </Typography>
         <form onSubmit={handleSearch}>
-          <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+          <Box sx={{ display: 'flex', gap: 2, mb: 3, position: 'relative' }}>
             <TextField
               fullWidth
               placeholder="Search for users, projects, or tasks..."
@@ -591,6 +608,49 @@ const SearchPage = () => {
                 startAdornment: <Search sx={{ mr: 1, color: 'text.secondary' }} />
               }}
             />
+            {/* User suggestion dropdown */}
+            {searchTerm && activeTab === 1 && (
+              <Box
+                sx={{
+                  position: 'absolute',
+                  top: '100%',
+                  left: 0,
+                  zIndex: 10,
+                  width: '100%',
+                  maxWidth: 400,
+                  bgcolor: 'background.paper',
+                  boxShadow: 3,
+                  borderRadius: 1,
+                  mt: 1,
+                  maxHeight: 300,
+                  overflowY: 'auto'
+                }}
+              >
+                {userSuggestions.length === 0 ? (
+                  <Typography sx={{ px: 2, py: 1, color: 'text.secondary' }}>No users found</Typography>
+                ) : (
+                  userSuggestions.slice(0, 5).map((user) => (
+                    <Box
+                      key={user.id || user._id || user.email || user.name}
+                      sx={{
+                        px: 2,
+                        py: 1,
+                        cursor: 'pointer',
+                        '&:hover': { bgcolor: 'grey.100' }
+                      }}
+                      onClick={() => handleUserClick(user.id)}
+                    >
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Avatar src={user.photo} sx={{ width: 28, height: 28 }}>
+                          {user.name?.charAt(0) || 'U'}
+                        </Avatar>
+                        <Typography variant="body2">{user.name}</Typography>
+                      </Box>
+                    </Box>
+                  ))
+                )}
+              </Box>
+            )}
             <Button
               type="submit"
               variant="contained"
@@ -612,7 +672,7 @@ const SearchPage = () => {
         {/* Tabs */}
         <Tabs value={activeTab} onChange={(e, newValue) => setActiveTab(newValue)}>
           {tabLabels.map((label, index) => (
-            <Tab key={index} label={label} />
+            <Tab key={label} label={label} />
           ))}
         </Tabs>
       </Box>
@@ -625,34 +685,34 @@ const SearchPage = () => {
           </Box>
         ) : searchTerm ? (
           <Box>
-            {(activeTab === 0 || activeTab === 1) && results.users.length > 0 && (
+            {(activeTab === 0 || activeTab === 1) && (results.users && results.users.length > 0) && (
               <Box sx={{ mb: 4 }}>
                 <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
                   Users ({results.users.length})
                 </Typography>
-                {results.users.map(renderUserCard)}
+                {results.users.map(user => renderUserCard(user))}
               </Box>
             )}
 
-            {(activeTab === 0 || activeTab === 2) && results.projects.length > 0 && (
+            {(activeTab === 0 || activeTab === 2) && (results.projects && results.projects.length > 0) && (
               <Box sx={{ mb: 4 }}>
                 <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
                   Projects ({results.projects.length})
                 </Typography>
-                {results.projects.map(renderProjectCard)}
+                {results.projects.map(project => renderProjectCard(project))}
               </Box>
             )}
 
-            {(activeTab === 0 || activeTab === 3) && results.tasks.length > 0 && (
+            {(activeTab === 0 || activeTab === 3) && (results.tasks && results.tasks.length > 0) && (
               <Box sx={{ mb: 4 }}>
                 <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
                   Tasks ({results.tasks.length})
                 </Typography>
-                {results.tasks.map(renderTaskCard)}
+                {results.tasks.map(task => renderTaskCard(task))}
               </Box>
             )}
 
-            {results.users.length === 0 && results.projects.length === 0 && results.tasks.length === 0 && (
+            {(results.users?.length === 0 && results.projects?.length === 0 && results.tasks?.length === 0) && (
               <Box sx={{ textAlign: 'center', py: 8 }}>
                 <Typography variant="h6" color="text.secondary" sx={{ mb: 2 }}>
                   No results found for "{searchTerm}"

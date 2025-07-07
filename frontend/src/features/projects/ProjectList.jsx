@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchProjects } from '../../store/slices/projectSlice';
+import { fetchProjects, addProject } from '../../store/slices/projectSlice';
 import ProjectFilters from '../../components/projects/ProjectFilters';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -17,6 +17,12 @@ import {
   TagIcon,
   PaperClipIcon
 } from '@heroicons/react/24/outline';
+import ProjectForm from '../../components/projects/ProjectForm';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import AddIcon from '@mui/icons-material/Add';
+import Fab from '@mui/material/Fab';
 
 const ProjectList = () => {
   const dispatch = useDispatch();
@@ -32,6 +38,7 @@ const ProjectList = () => {
   });
   const [showFilters, setShowFilters] = useState(false);
   const { user } = useSelector(state => state.auth);
+  const [createProjectDialog, setCreateProjectDialog] = useState(false);
 
   useEffect(() => {
     // Transform filters: remove empty values, flatten tags
@@ -107,6 +114,33 @@ const ProjectList = () => {
     }
   };
 
+  const handleCreateProject = async (projectData) => {
+    // Prepare tags as array
+    const data = {
+      ...projectData,
+      tags: projectData.tags.split(',').map(tag => tag.trim()).filter(Boolean),
+    };
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+      if (key === 'tags' && Array.isArray(value)) {
+        formData.append(key, JSON.stringify(value));
+      } else {
+        formData.append(key, value);
+      }
+    });
+    if (projectData.files) {
+      projectData.files.forEach((fileObj) => {
+        formData.append('files', fileObj.file);
+      });
+    }
+    const resultAction = await dispatch(addProject(formData));
+    if (addProject.fulfilled.match(resultAction)) {
+      const newProject = resultAction.payload;
+      setCreateProjectDialog(false);
+      navigate(`/dashboard/projects/${newProject.id}`);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-indigo-950">
       {/* Header Section */}
@@ -116,15 +150,6 @@ const ProjectList = () => {
             <div className="mb-4 lg:mb-0">
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Find Your Next Project</h1>
               <p className="mt-2 text-gray-600 dark:text-indigo-200">Discover opportunities that match your skills and expertise</p>
-            </div>
-            <div className="flex items-center space-x-3">
-              <button
-                onClick={() => navigate('/dashboard/projects/new')}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-indigo-700 hover:bg-indigo-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-700 transition-colors duration-200"
-              >
-                <BriefcaseIcon className="w-4 h-4 mr-2" />
-                Post a Project
-              </button>
             </div>
           </div>
         </div>
@@ -372,6 +397,58 @@ const ProjectList = () => {
           </>
         )}
       </div>
+
+      {/* Remove the old 'Post a Project' button and add FAB */}
+      <Fab
+        color="primary"
+        aria-label="add"
+        sx={{
+          position: 'fixed',
+          bottom: 24,
+          right: 24,
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          '&:hover': {
+            background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
+            transform: 'scale(1.1)'
+          },
+          zIndex: 50
+        }}
+        onClick={() => setCreateProjectDialog(true)}
+      >
+        <AddIcon />
+      </Fab>
+      <Dialog
+        open={createProjectDialog}
+        onClose={() => setCreateProjectDialog(false)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            height: '90vh',
+            maxHeight: '90vh',
+            borderRadius: '16px'
+          }
+        }}
+      >
+        <DialogTitle sx={{
+          borderBottom: '1px solid',
+          borderColor: 'divider',
+          flexShrink: 0,
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          color: 'white'
+        }}>
+          Create New Project
+        </DialogTitle>
+        <DialogContent sx={{
+          overflow: 'auto',
+          p: 0
+        }}>
+          <ProjectForm
+            onSubmit={handleCreateProject}
+            onCancel={() => setCreateProjectDialog(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

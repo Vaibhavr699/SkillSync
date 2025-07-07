@@ -12,7 +12,9 @@ const {
   getUserById,
   searchUsers,
   getAllSkills,
-  getUserImages
+  getUserImages,
+  updateCompanyName,
+  getCompanyById
 } = require('../controllers/user.controller.js');
 const auth = require('../middleware/auth');
 const upload = require('../middleware/upload');
@@ -54,5 +56,11 @@ router.get('/', searchUsers);
 
 // GET all images for a user
 router.get('/:userId/images', auth, getUserImages);
+
+// PATCH update company name
+router.patch('/companies/:companyId/name', auth, updateCompanyName);
+
+// GET company info by ID
+router.get('/companies/:companyId', auth, getCompanyById);
 
 module.exports = router;

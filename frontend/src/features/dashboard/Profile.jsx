@@ -23,6 +23,7 @@ import {
 } from "react-icons/hi";
 import { Autocomplete, TextField, Backdrop } from "@mui/material";
 import api from "../../api/api";
+import axios from 'axios';
 
 const Profile = () => {
   const dispatch = useDispatch();
@@ -34,6 +35,9 @@ const Profile = () => {
   const [allSkills, setAllSkills] = useState([]);
   const [skillsLoading, setSkillsLoading] = useState(false);
   const [skillInput, setSkillInput] = useState("");
+  const [companyEditMode, setCompanyEditMode] = useState(false);
+  const [companyName, setCompanyName] = useState(user?.company_name || '');
+  const [companyNameLoading, setCompanyNameLoading] = useState(false);
 
   useEffect(() => {
     const userId = user?._id || user?.id;
@@ -50,6 +54,14 @@ const Profile = () => {
       .then((res) => setAllSkills(res.data || []))
       .finally(() => setSkillsLoading(false));
   }, []);
+
+  // Fetch company name if user is company
+  useEffect(() => {
+    if (user?.role === 'company' && user?.company_id) {
+      api.get(`/companies/${user.company_id}`)
+        .then(res => setCompanyName(res.data?.company?.name || ''));
+    }
+  }, [user]);
 
   const handleImageUpload = async (files) => {
     if (files.length > 0) {
@@ -158,6 +170,24 @@ const Profile = () => {
       toast.success("Profile photo updated!");
     } catch {
       toast.error("Failed to update profile photo.");
+    }
+  };
+
+  const handleCompanyNameUpdate = async () => {
+    if (!companyName.trim()) {
+      toast.error('Company name cannot be empty.');
+      return;
+    }
+    setCompanyNameLoading(true);
+    try {
+      await api.patch(`/users/companies/${user.company_id}/name`, { name: companyName });
+      toast.success('Company name updated!');
+      setCompanyEditMode(false);
+      // Optionally update Redux/auth state here
+    } catch (err) {
+      toast.error('Failed to update company name.');
+    } finally {
+      setCompanyNameLoading(false);
     }
   };
 
@@ -514,6 +544,47 @@ const Profile = () => {
                     <HiOutlinePencil className="w-4 h-4 sm:w-5 sm:h-5" /> Edit Profile
                   </button>
                 </div>
+                {/* Company Name Edit Section (for company users) */}
+                {user?.role === 'company' && user?.company_id && (
+                  <div className="w-full flex flex-col gap-2 mb-4">
+                    <label className="font-semibold text-indigo-700 dark:text-indigo-200">Company Name</label>
+                    {companyEditMode ? (
+                      <div className="flex gap-2 items-center">
+                        <input
+                          type="text"
+                          value={companyName}
+                          onChange={e => setCompanyName(e.target.value)}
+                          className="border rounded px-3 py-2 w-64"
+                          disabled={companyNameLoading}
+                        />
+                        <button
+                          className="bg-green-500 text-white px-3 py-1 rounded"
+                          onClick={handleCompanyNameUpdate}
+                          disabled={companyNameLoading}
+                        >
+                          Save
+                        </button>
+                        <button
+                          className="bg-gray-300 text-gray-700 px-3 py-1 rounded"
+                          onClick={() => setCompanyEditMode(false)}
+                          disabled={companyNameLoading}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex gap-2 items-center">
+                        <span className="text-lg font-bold text-indigo-900 dark:text-white">{companyName}</span>
+                        <button
+                          className="bg-indigo-500 text-white px-2 py-1 rounded"
+                          onClick={() => setCompanyEditMode(true)}
+                        >
+                          Edit
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </>
             )}
           </div>

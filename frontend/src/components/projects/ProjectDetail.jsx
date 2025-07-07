@@ -12,7 +12,7 @@ import {
   updateProject
 } from '../../store/slices/projectSlice';
 import FileViewer from '../../components/files/FileViewer';
-import CommentsSection from '../../components/comments/CommentsSection';
+import CommentSection from '../../components/comments/CommentSection';
 import TaskBoard from '../tasks/TaskBoard';
 import ApplicationForm from '../../components/projects/ApplicationForm';
 import ApplicationsList from '../../components/projects/ApplicationsList';
@@ -26,6 +26,7 @@ import FileUpload from '../../components/files/FileUpload';
 import { toast } from 'react-hot-toast';
 import ProjectAnalytics from '../../components/projects/ProjectAnalytics';
 import AIAssistant from '../ai/AIAssistant';
+import ProjectForm from './ProjectForm';
 
 // Icons
 import { 
@@ -139,34 +140,6 @@ const ProjectDetail = () => {
     }
   };
 
-  const handleCreateProject = async (values, { setSubmitting }) => {
-    try {
-      const projectData = {
-        ...values,
-        tags: values.tags.split(',').map(tag => tag.trim()).filter(Boolean),
-      };
-      const formData = new FormData();
-      Object.entries(projectData).forEach(([key, value]) => {
-        if (key === 'tags' && Array.isArray(value)) {
-          formData.append(key, JSON.stringify(value));
-        } else {
-          formData.append(key, value);
-        }
-      });
-      files.forEach((fileObj) => {
-        formData.append('files', fileObj.file);
-      });
-      const resultAction = await dispatch(addProject(formData));
-      setSubmitting(false);
-      if (addProject.fulfilled.match(resultAction)) {
-        const newProject = resultAction.payload;
-        navigate(`/dashboard/projects/${newProject.id}`);
-      }
-    } catch (err) {
-      setSubmitting(false);
-    }
-  };
-
   const handleFeedbackSubmit = async () => {
     if (!selectedApplication || !feedbackText.trim()) return;
     
@@ -255,8 +228,8 @@ const ProjectDetail = () => {
 
   if (projectId === 'new') {
     return (
-      <div className="min-h-screen mt-14 bg-gradient-to-br h-[calc(100vh-90px)] overflow-y-auto from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-2 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
-        <div className="max-w-4xl mx-auto">
+      <div className="min-h-screen mt-8 bg-gradient-to-br h-[calc(100vh-90px)] from-indigo-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 px-2 sm:px-4 md:px-6 lg:px-8 py-4 sm:py-6 lg:py-8">
+        <div className="max-w-4xl mx-auto h-[80vh] flex flex-col">
           <div className="flex items-center gap-2 sm:gap-3 mb-4 sm:mb-6 lg:mb-8">
             <button 
               onClick={() => navigate('/dashboard/projects')}
@@ -268,130 +241,17 @@ const ProjectDetail = () => {
               Create New Project
             </h1>
           </div>
-
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-4 sm:p-6 lg:p-8">
-            <Formik
-              initialValues={{ title: '', description: '', budget: '', deadline: '', tags: '' }}
-              validationSchema={Yup.object({
-                title: Yup.string().required('Required'),
-                description: Yup.string().required('Required'),
-                budget: Yup.number().min(0, 'Must be positive').required('Required'),
-                deadline: Yup.date().required('Required'),
-                tags: Yup.string(),
-              })}
-              onSubmit={handleCreateProject}
-            >
-              {({ isSubmitting, setFieldValue, values }) => (
-                <Form className="space-y-4 sm:space-y-6">
-                  <div className="animate-fade-in">
-                    <label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Project Title
-                    </label>
-                    <Field 
-                      name="title" 
-                      type="text" 
-                      placeholder="Enter project title..."
-                      className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white transition-all duration-200 text-sm sm:text-base"
-                    />
-                  </div>
-
-                  <div className="animate-fade-in animation-delay-100">
-                    <label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Description
-                    </label>
-                    <Field 
-                      as="textarea" 
-                      name="description" 
-                      rows={4}
-                      placeholder="Describe your project in detail..."
-                      className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white transition-all duration-200 text-sm sm:text-base resize-none"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 animate-fade-in animation-delay-200">
-                    <div>
-                      <label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Budget (₹)
-                      </label>
-                      <Field 
-                        name="budget" 
-                        type="number" 
-                        placeholder="0"
-                        className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white transition-all duration-200 text-sm sm:text-base"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Deadline
-                      </label>
-                      <Field 
-                        name="deadline" 
-                        type="date" 
-                        className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white transition-all duration-200 text-sm sm:text-base"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="animate-fade-in animation-delay-300">
-                    <label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Tags (comma separated)
-                    </label>
-                    <Field 
-                      name="tags" 
-                      type="text" 
-                      placeholder="e.g., web development, react, javascript"
-                      className="w-full px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 dark:bg-gray-700 dark:text-white transition-all duration-200 text-sm sm:text-base"
-                    />
-                  </div>
-
-                  <div className="animate-fade-in animation-delay-400">
-                    <label className="block text-sm sm:text-base font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Attachments
-                    </label>
-                    <FileUpload 
-                      multiple={true} 
-                      accept="*" 
-                      onUploadComplete={(selectedFiles) => setFiles(selectedFiles)} 
-                      showPreview={true} 
-                    />
-                    {files.length > 0 && (
-                      <div className="text-xs sm:text-sm text-gray-500 mt-2 flex items-center gap-1">
-                        <HiOutlinePaperClip className="w-4 h-4" />
-                        {files.length} file(s) selected
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row gap-3 pt-4 sm:pt-6 animate-fade-in animation-delay-500">
-                    <button 
-                      type="submit" 
-                      disabled={isSubmitting}
-                      className="w-full sm:w-auto px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
-                    >
-                      {isSubmitting ? (
-                        <span className="flex items-center justify-center gap-2">
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                          Creating...
-                        </span>
-                      ) : (
-                        <span className="flex items-center justify-center gap-2">
-                          <HiOutlineSparkles className="w-4 h-4" />
-                          Create Project
-                        </span>
-                      )}
-                    </button>
-                    <button 
-                      type="button" 
-                      onClick={() => navigate('/dashboard/projects')}
-                      className="w-full sm:w-auto px-6 py-3 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 font-medium rounded-xl shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-0.5 active:scale-95 text-sm sm:text-base"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </Form>
-              )}
-            </Formik>
+          <div className="flex-1 overflow-y-auto">
+            <ProjectForm
+              onSubmit={async (data) => {
+                const result = await import('../../api/projects').then(mod => mod.createProject(data));
+                if (result && result.id) {
+                  navigate(`/dashboard/projects/${result.id}`);
+                }
+              }}
+              onCancel={() => navigate('/dashboard/projects')}
+              submitText="Create Project"
+            />
           </div>
         </div>
       </div>
@@ -662,8 +522,8 @@ const ProjectDetail = () => {
 
             {/* Analytics Preview */}
             <div className="p-4 sm:p-6 border-t border-gray-200 dark:border-gray-700">
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-2">
-                <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-white flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 mt-6 gap-2">
+                <h3 className="text-2xl font-bold sm:text-lg text-gray-800 dark:text-white flex items-center gap-2">
                   Project Analytics
                 </h3>
                 <button
@@ -691,9 +551,8 @@ const ProjectDetail = () => {
                 >
                   View All
                 </button>
-              </div>
-              <div className="bg-white dark:bg-gray-700 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 p-3 sm:p-4">
-                <CommentsSection 
+                <div className="bg-white dark:bg-gray-700 rounded-lg shadow-sm border border-gray-200 dark:border-gray-600 p-1 sm:p-4">
+                <CommentSection 
                   resourceType="project" 
                   resourceId={projectId} 
                   preview={true}
@@ -701,6 +560,8 @@ const ProjectDetail = () => {
                   className="modern-comments-preview"
                 />
               </div>
+              </div>
+              
             </div>
           </div>
         )}
@@ -776,7 +637,7 @@ const ProjectDetail = () => {
         {tabValue === 'comments' && (
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-200 dark:border-gray-700">
             <div className="p-4 sm:p-6">
-              <CommentsSection 
+              <CommentSection 
                 resourceType="project" 
                 resourceId={projectId} 
                 className="professional-comments"

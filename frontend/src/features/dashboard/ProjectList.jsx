@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchProjects } from '../../store/slices/projectSlice';
-import { Link } from 'react-router-dom';
+import { fetchProjects, addProject } from '../../store/slices/projectSlice';
+import { Link, useNavigate } from 'react-router-dom';
 import ProjectFilters from '../../components/projects/ProjectFilters';
 import { 
   HiOutlineMagnifyingGlass,
@@ -20,6 +20,12 @@ import {
   HiOutlineChartBar,
   HiOutlinePresentationChartLine
 } from 'react-icons/hi2';
+import ProjectForm from '../../components/projects/ProjectForm';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import AddIcon from '@mui/icons-material/Add';
+import Fab from '@mui/material/Fab';
 
 const ProjectList = () => {
   const dispatch = useDispatch();
@@ -34,15 +40,49 @@ const ProjectList = () => {
     maxBudget: null,
   });
   const [showFilters, setShowFilters] = useState(false);
+  const [createProjectDialog, setCreateProjectDialog] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
-    dispatch(fetchProjects({ page, search: searchTerm, ...filters }));
-  }, [dispatch, page, searchTerm, filters]);
+    if (user?.role === 'company' && (user?.id || user?._id)) {
+      const userId = user.id || user._id;
+      dispatch(fetchProjects({ page, search: searchTerm, ...filters, createdBy: userId }));
+    } else if (user?.role === 'freelancer') {
+      dispatch(fetchProjects({ page, search: searchTerm, ...filters }));
+    }
+  }, [dispatch, page, searchTerm, filters, user]);
 
   const handleApplyFilters = (newFilters) => {
     setFilters(newFilters);
     setPage(1);
     setShowFilters(false);
+  };
+
+  const handleCreateProject = async (projectData) => {
+    // Prepare tags as array
+    const data = {
+      ...projectData,
+      tags: Array.isArray(projectData.tags) ? projectData.tags : (projectData.tags || '').split(',').map(tag => tag.trim()).filter(Boolean),
+    };
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+      if (key === 'tags' && Array.isArray(value)) {
+        formData.append(key, JSON.stringify(value));
+      } else {
+        formData.append(key, value);
+      }
+    });
+    if (projectData.files) {
+      projectData.files.forEach((fileObj) => {
+        formData.append('files', fileObj.file);
+      });
+    }
+    const resultAction = await dispatch(addProject(formData));
+    if (addProject.fulfilled.match(resultAction)) {
+      const newProject = resultAction.payload;
+      setCreateProjectDialog(false);
+      navigate(`/dashboard/projects/${newProject.id}`);
+    }
   };
 
   // Company-specific styling and icons
@@ -83,6 +123,9 @@ const ProjectList = () => {
 
   const config = user?.role === 'company' ? companyConfig : freelancerConfig;
   const IconComponent = config.icon;
+
+  // No client-side filtering needed; backend handles it
+  const filteredProjects = projects;
 
   return (
     <div className="min-h-screen bg-gray-50 px-6 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
@@ -130,16 +173,6 @@ const ProjectList = () => {
               <HiOutlineFunnel className="w-5 h-5" />
               <span className="hidden sm:inline">Filters</span>
             </button>
-            
-            {user?.role === 'company' && (
-              <Link
-                to="/dashboard/projects/new"
-                className={`flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold transition-all duration-200 ${config.buttonBg} ${config.buttonHover} shadow-lg hover:shadow-xl transform hover:scale-105`}
-              >
-                <HiOutlinePlus className="w-5 h-5" />
-                <span>New Project</span>
-              </Link>
-            )}
           </div>
         </div>
 
@@ -208,8 +241,8 @@ const ProjectList = () => {
                 </div>
               ))}
             </div>
-          ) : (!Array.isArray(projects) || projects.length === 0) ? (
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-12 text-center">
+          ) : (!Array.isArray(filteredProjects) || filteredProjects.length === 0) ? (
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-12 text-center overflow-y-auto max-h-[70vh]">
               <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r ${config.gradient} text-white mb-4`}>
                 {user?.role === 'company' ? <HiOutlineBuildingOffice2 className="w-8 h-8" /> : <HiOutlineSparkles className="w-8 h-8" />}
               </div>
@@ -222,20 +255,11 @@ const ProjectList = () => {
                   : 'Try adjusting your search criteria or check back later for new opportunities'
                 }
               </p>
-              {user?.role === 'company' && (
-                <Link
-                  to="/dashboard/projects/new"
-                  className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold transition-all duration-200 ${config.buttonBg} ${config.buttonHover} shadow-lg hover:shadow-xl transform hover:scale-105`}
-                >
-                  <HiOutlinePlus className="w-5 h-5" />
-                  Create Your First Project
-                </Link>
-              )}
             </div>
           ) : (
             <>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {(Array.isArray(projects) ? projects : []).map((project) => (
+                {(Array.isArray(filteredProjects) ? filteredProjects : []).map((project) => (
                   <div
                     key={project.id}
                     className={`${config.cardBg} dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-gray-100 overflow-hidden group cursor-pointer`}
@@ -358,6 +382,62 @@ const ProjectList = () => {
           )}
         </div>
       </div>
+
+      {/* Place FAB/modal here at the root, so it is not inside any flex or grid container */}
+      {user?.role === 'company' && (
+        <>
+          <Fab
+            color="primary"
+            aria-label="add"
+            sx={{
+              position: 'fixed',
+              bottom: 24,
+              right: 24,
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%)',
+                transform: 'scale(1.1)'
+              },
+              zIndex: 50
+            }}
+            onClick={() => setCreateProjectDialog(true)}
+          >
+            <AddIcon />
+          </Fab>
+          <Dialog
+            open={createProjectDialog}
+            onClose={() => setCreateProjectDialog(false)}
+            maxWidth="md"
+            fullWidth
+            PaperProps={{
+              sx: {
+                height: '90vh',
+                maxHeight: '90vh',
+                borderRadius: '16px'
+              }
+            }}
+          >
+            <DialogTitle sx={{
+              borderBottom: '1px solid',
+              borderColor: 'divider',
+              flexShrink: 0,
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              color: 'white'
+            }}>
+              Create New Project
+            </DialogTitle>
+            <DialogContent sx={{
+              overflow: 'auto',
+              p: 0
+            }}>
+              <ProjectForm
+                onSubmit={handleCreateProject}
+                onCancel={() => setCreateProjectDialog(false)}
+              />
+            </DialogContent>
+          </Dialog>
+        </>
+      )}
     </div>
   );
 };

@@ -78,6 +78,13 @@ const Dashboard = () => {
   const config = user?.role === 'company' ? companyConfig : freelancerConfig;
   const IconComponent = config.icon;
 
+  // Filter projects for company users to only show their own projects
+  let filteredProjects = projects;
+  if (user?.role === 'company' && Array.isArray(projects)) {
+    const userId = user.id || user._id;
+    filteredProjects = projects.filter(p => String(p.created_by) === String(userId));
+  }
+
   if (!user || projectsLoading || tasksLoading) {
     return (
       <div className={`min-h-screen ${config.bgColor} dark:bg-gray-900 flex justify-center items-center`}>
@@ -95,7 +102,7 @@ const Dashboard = () => {
   const stats = [
     {
       title: 'Projects',
-      value: projects?.length || 0,
+      value: filteredProjects?.length || 0,
       icon: <HiOutlineSquares2X2 className="w-7 h-7" />,
       action: () => navigate('/dashboard/projects'),
       color: 'text-blue-600',
@@ -198,7 +205,7 @@ const Dashboard = () => {
           </button>
         </div>
 
-        {Array.isArray(projects) && projects.length === 0 ? (
+        {Array.isArray(filteredProjects) && filteredProjects.length === 0 ? (
           <div className={`${config.cardBg} rounded-2xl shadow-lg p-12 text-center border border-gray-100`}>
             <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r ${config.gradient} text-white mb-4`}>
               {user?.role === 'company' ? <HiOutlineBuildingOffice2 className="w-8 h-8" /> : <HiOutlineSparkles className="w-8 h-8" />}
@@ -208,23 +215,14 @@ const Dashboard = () => {
             </h3>
             <p className="text-gray-600 mb-6 max-w-md mx-auto">
               {user?.role === 'company' 
-                ? 'Start building your project portfolio by creating your first project'
+                ? 'Ready to kickstart your journey? Head over to Project Management to create and manage your projects with powerful tools and analytics!'
                 : 'Check back later for new opportunities that match your skills'
               }
             </p>
-            {user?.role === 'company' && (
-              <button
-                onClick={() => navigate('/dashboard/projects/new')}
-                className={`inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-semibold transition-all duration-200 ${config.buttonBg} ${config.buttonHover} shadow-lg hover:shadow-xl transform hover:scale-105`}
-              >
-                <HiOutlinePlus className="w-5 h-5" />
-                Create Your First Project
-              </button>
-            )}
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {(projects || []).map((project) => (
+            {(filteredProjects || []).map((project) => (
               <div
                 key={project.id}
                 className="bg-white dark:bg-indigo-900 rounded-2xl shadow-lg flex flex-col h-full border border-gray-100 dark:border-indigo-800 hover:shadow-xl transition-all duration-300 transform hover:scale-105 cursor-pointer group"

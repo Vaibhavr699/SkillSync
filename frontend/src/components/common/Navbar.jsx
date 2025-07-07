@@ -338,16 +338,16 @@ const Navbar = ({ onSidebarToggle }) => {
       <div className="flex items-center gap-2 sm:gap-3 md:gap-4 flex-shrink-0">
         {user?.role !== 'admin' && (
           <div className="scale-90 sm:scale-100">
-            <NotificationsDropdown />
+        <NotificationsDropdown />
           </div>
         )}
         {user?.role !== 'admin' && (
-          <button
-            onClick={toggleTheme}
+        <button
+          onClick={toggleTheme}
             className="p-1.5 sm:p-2 rounded-full hover:bg-indigo-100 dark:hover:bg-indigo-800 transition flex items-center justify-center border border-indigo-200 dark:border-indigo-700"
-            aria-label="Toggle theme"
-          >
-            {isDark ? (
+          aria-label="Toggle theme"
+        >
+          {isDark ? (
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-400"
@@ -361,8 +361,8 @@ const Navbar = ({ onSidebarToggle }) => {
                   strokeWidth={2}
                   d="M21 12.79A9 9 0 1111.21 3a7 7 0 109.79 9.79z"
                 />
-              </svg>
-            ) : (
+            </svg>
+          ) : (
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500"
@@ -384,9 +384,9 @@ const Navbar = ({ onSidebarToggle }) => {
                   strokeLinecap="round"
                   d="M12 1v2m0 18v2m11-11h-2M3 12H1m16.95 6.95l-1.41-1.41M6.46 6.46L5.05 5.05m12.02 0l-1.41 1.41M6.46 17.54l-1.41 1.41"
                 />
-              </svg>
-            )}
-          </button>
+            </svg>
+          )}
+        </button>
         )}
         {user ? (
           <Link
@@ -415,31 +415,31 @@ const Navbar = ({ onSidebarToggle }) => {
         )}
         {/* Hamburger menu for md and below, only for non-admins */}
         {user?.role !== 'admin' && (
-          <button
+              <button
             type="button"
             className="block lg:hidden ml-2 p-2 rounded-md bg-white dark:bg-indigo-900 shadow-md"
             onClick={onSidebarToggle}
             aria-label="Open sidebar"
-          >
+              >
             <FiMenu className="w-6 h-6 text-indigo-700 dark:text-white" />
-          </button>
+              </button>
         )}
         {/* Logout button for admin */}
         {user?.role === 'admin' && (
-          <button
+            <button
             onClick={() => {
               dispatch(logout());
               navigate('/login');
             }}
             className="px-3 py-1.5 rounded-full bg-red-600 text-white font-semibold hover:bg-red-700 transition ml-2 flex items-center gap-2"
-          >
+            >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2h4a2 2 0 012 2v1" />
-            </svg>
+                </svg>
             Logout
-          </button>
-        )}
-      </div>
+            </button>
+            )}
+          </div>
     </header>
   );
 };

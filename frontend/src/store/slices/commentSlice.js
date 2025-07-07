@@ -25,10 +25,10 @@ export const createComment = createAsyncThunk(
     let createResponse;
     if (files instanceof FormData) {
       // Handle file upload with FormData
-      files.append('content', content);
-      files.append('entityId', String(resourceId));
-      files.append('entityType', resourceType);
-      if (replyTo) files.append('replyTo', String(replyTo));
+      if (!files.has('content')) files.append('content', content);
+      if (!files.has('entityId')) files.append('entityId', String(resourceId));
+      if (!files.has('entityType')) files.append('entityType', resourceType);
+      if (replyTo && !files.has('replyTo')) files.append('replyTo', String(replyTo));
       createResponse = await api.post(`/${urlType}/${resourceId}/comments`, files, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -44,8 +44,8 @@ export const createComment = createAsyncThunk(
       if (replyTo) payload.replyTo = String(replyTo);
       createResponse = await api.post(`/${urlType}/${resourceId}/comments`, payload);
     }
-    // Attach resourceType and resourceId to the returned comment
-    return { ...createResponse.data, resourceType, resourceId };
+    // Return only the comment object from the backend
+    return createResponse.data;
   }
 );
 
@@ -97,6 +97,7 @@ function normalizeCommentIds(comments) {
       ...comment.author,
       _id: comment.author._id ? String(comment.author._id) : undefined
     } : undefined,
+    attachments: comment.attachments || [],
     replies: comment.replies ? normalizeCommentIds(comment.replies) : []
   }));
 }
@@ -146,39 +147,20 @@ const commentSlice = createSlice({
       .addCase(createComment.fulfilled, (state, action) => {
         state.loading = false;
         let newComment = action.payload;
-        const { resourceType, resourceId } = newComment;
+        const { resourceType, resourceId } = action.meta.arg;
         if (!state.comments[resourceType]) state.comments[resourceType] = {};
         if (!state.comments[resourceType][resourceId]) state.comments[resourceType][resourceId] = [];
 
         // Normalize new comment IDs to strings
         newComment = normalizeCommentIds([newComment])[0];
 
-        // PATCH: Ensure author and createdAt are always present for new comments
-        if (!newComment.author || !newComment.author._id) {
-          let user = null;
-          try {
-            const auth = JSON.parse(localStorage.getItem('auth'));
-            user = auth?.user;
-          } catch {}
-          if (user) {
-            newComment.author = {
-              _id: user._id || user.id,
-              name: user.name || user.fullName || user.email || 'Unknown User',
-              photo: user.photo || user.profilePicture || undefined,
-              profilePicture: user.photo || user.profilePicture || undefined
-            };
-          }
-        }
-        newComment.createdAt = new Date().toISOString();
-
         if (newComment.replyTo) {
           // Find the parent comment and add this as a reply (robust string comparison)
           const addReplyToComment = (comments) => {
             for (let comment of comments) {
-              // Debug log for matching
               if (String(comment._id) === String(newComment.replyTo)) {
                 if (!comment.replies) comment.replies = [];
-                comment.replies.push(newComment);
+                comment.replies = [...comment.replies, newComment];
                 return true;
               }
               if (comment.replies && addReplyToComment(comment.replies)) {
@@ -189,7 +171,10 @@ const commentSlice = createSlice({
           };
           addReplyToComment(state.comments[resourceType][resourceId]);
         } else {
-          state.comments[resourceType][resourceId].push(newComment);
+          state.comments[resourceType][resourceId] = [
+            ...state.comments[resourceType][resourceId],
+            newComment
+          ];
         }
       })
       .addCase(createComment.rejected, (state, action) => {

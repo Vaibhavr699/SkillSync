@@ -25,8 +25,9 @@ import {
   addProject,
   updateProject
 } from '../../store/slices/projectSlice';
+import { fetchTasks } from '../../store/slices/taskSlice';
 import FileViewer from '../../components/files/FileViewer';
-import CommentsSection from '../../components/comments/CommentsSection';
+import CommentSection from '../../components/comments/CommentSection';
 import TaskBoard from '../tasks/TaskBoard';
 import ApplicationForm from '../../components/projects/ApplicationForm';
 import ApplicationsList from '../../components/projects/ApplicationsList';
@@ -56,6 +57,7 @@ import {
   HiOutlineMail,
   HiOutlineDocumentText,
 } from 'react-icons/hi';
+import api from '../../api/api';
 
 const ProjectDetail = () => {
   const { projectId } = useParams();
@@ -87,6 +89,7 @@ const ProjectDetail = () => {
   useEffect(() => {
     if (projectId && projectId !== 'new' && projectId !== 'undefined') {
       dispatch(fetchProjectById(projectId));
+      dispatch(fetchTasks({ projectId }));
       if (user?.role === 'company') {
         dispatch(fetchApplications(projectId));
       }
@@ -129,9 +132,10 @@ const ProjectDetail = () => {
     try {
       await dispatch(updateApplication({ projectId, applicationId, status })).unwrap();
       toast.success(`Application ${status} successfully`);
-      // Refresh project data
+      // Refresh project data and applications
       if (projectId) {
         dispatch(fetchProjectById(projectId));
+        dispatch(fetchApplications(projectId)); // Instantly refresh applications list
       }
     } catch (error) {
       toast.error(error.message || 'Failed to update application status');
@@ -151,6 +155,10 @@ const ProjectDetail = () => {
         dispatch(fetchProjectById(projectId));
         dispatch(fetchApplications(projectId));
       }
+      // Reload the page to update UI for freelancer
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000); // Give the toast a moment to show
     } catch (error) {
       toast.error(error.message || 'Failed to submit application');
     }
@@ -369,50 +377,42 @@ Deadline: ${currentProject?.deadline ? format(new Date(currentProject.deadline),
   // Allow upload if owner or admin
   const canUploadFiles = user?.role === 'company' || user?.role === 'admin';
 
+  // Comment API functions
+  const fetchComments = async (resourceType, resourceId) => {
+    const url = resourceType === 'project'
+      ? `/projects/${resourceId}/comments`
+      : `/tasks/${resourceId}/comments`;
+    const res = await api.get(url);
+    return res.data;
+  };
+  const addComment = async ({ content, files, replyTo }) => {
+    const formData = new FormData();
+    formData.append('content', content);
+    if (replyTo) formData.append('replyTo', replyTo);
+    files.forEach(file => formData.append('files', file));
+    formData.append('entityId', projectId);
+    formData.append('entityType', 'project');
+    await api.post(`/projects/${projectId}/comments`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+  };
+  const editComment = async (commentId, content) => {
+    await api.put(`/projects/${projectId}/comments/${commentId}`, { content });
+  };
+  const deleteComment = async (commentId) => {
+    await api.delete(`/projects/${projectId}/comments/${commentId}`);
+  };
+
   if (projectId === 'new') {
+    useEffect(() => {
+      navigate('/dashboard/projects');
+    }, [navigate]);
     return (
-      <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-white dark:from-indigo-950 dark:to-indigo-900 px-2 md:px-8 py-8 overflow-y-auto">
-        {/* Header */}
-        <div className="p-4 border-b border-gray-200 bg-white dark:bg-gray-800 flex items-center gap-2">
-          <button onClick={() => navigate('/dashboard/projects')} className="p-2 rounded-full hover:bg-indigo-100 text-indigo-700 transition"><ArrowBack /></button>
-          <h1 className="text-2xl font-bold text-indigo-800">Create New Project</h1>
-        </div>
-        {/* Scrollable Form Content */}
-        <div className="flex-1 overflow-y-auto p-4 flex justify-center">
-          <div className="w-full max-w-2xl bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 mt-8">
-            <Formik
-              initialValues={{ title: '', description: '', budget: '', deadline: '', tags: '' }}
-              validationSchema={Yup.object({
-                title: Yup.string().required('Required'),
-                description: Yup.string().required('Required'),
-                budget: Yup.number().min(0, 'Must be positive').required('Required'),
-                deadline: Yup.date().required('Required'),
-                tags: Yup.string(),
-              })}
-              onSubmit={handleCreateProject}
-            >
-              {({ isSubmitting, setFieldValue, values }) => (
-                <Form>
-                  <Field as={TextField} name="title" label="Title" fullWidth margin="normal" className="w-full mb-4" />
-                  <Field as={TextField} name="description" label="Description" fullWidth margin="normal" multiline minRows={4} className="w-full mb-4" />
-                  <div className="flex gap-4 mb-4">
-                    <Field as={TextField} name="budget" label="Budget (₹)" type="number" fullWidth margin="normal" className="w-1/2" />
-                    <Field as={TextField} name="deadline" label="Deadline" type="date" InputLabelProps={{ shrink: true }} fullWidth margin="normal" className="w-1/2" />
-                  </div>
-                  <Field as={TextField} name="tags" label="Tags (comma separated)" fullWidth margin="normal" className="w-full mb-4" />
-                  <div className="mb-4">
-                    <div className="font-semibold mb-2">Attachments</div>
-                    <FileUpload multiple={true} accept="*" onUploadComplete={(selectedFiles) => setFiles(selectedFiles)} showPreview={true} />
-                    {files.length > 0 && <div className="text-sm text-gray-500 mt-2">{files.length} file(s) selected</div>}
-                  </div>
-                  <div className="flex gap-2 mt-6">
-                    <button type="submit" className="px-6 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow" disabled={isSubmitting}>Create Project</button>
-                    <button type="button" className="px-6 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold shadow" onClick={() => navigate('/dashboard/projects')}>Cancel</button>
-                  </div>
-                </Form>
-              )}
-            </Formik>
-          </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 mt-8 text-center">
+          <h1 className="text-2xl font-bold text-indigo-800 mb-4">Project Creation Moved</h1>
+          <p className="text-gray-700 dark:text-gray-200 mb-4">To create a new project, please use the <b>"Create New Project"</b> button in the Projects or Project Management section.</p>
+          <button onClick={() => navigate('/dashboard/projects')} className="px-6 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow">Go to Projects</button>
         </div>
       </div>
     );
@@ -467,7 +467,11 @@ Deadline: ${currentProject?.deadline ? format(new Date(currentProject.deadline),
                   <p className="text-gray-600 dark:text-indigo-100 text-lg mb-2 font-medium">{currentProject.description}</p>
                   {/* Apply Now button for freelancers who have not applied */}
                   {user?.role === 'freelancer' && (
-                    projectApplications.some(app => app.freelancer?._id === user?.id || app.freelancer?.id === user?.id)
+                    projectApplications.some(app =>
+                      app.freelancer?._id === user?.id ||
+                      app.freelancer?.id === user?.id ||
+                      app.freelancer_id === user?.id
+                    )
                       ? (
                         <Tooltip title="You have already applied for this project. You cannot apply again." arrow>
                           <span>
@@ -480,12 +484,12 @@ Deadline: ${currentProject?.deadline ? format(new Date(currentProject.deadline),
                           </span>
                         </Tooltip>
                       ) : (
-                        <button
-                          className="mt-4 flex items-center gap-2 px-8 py-2 rounded bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold shadow-lg hover:from-indigo-600 hover:to-purple-700 transition text-base"
-                          onClick={() => setApplyDialogOpen(true)}
-                        >
-                          <PersonAdd className="!text-base" /> Apply Now
-                        </button>
+                    <button
+                      className="mt-4 flex items-center gap-2 px-8 py-2 rounded bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold shadow-lg hover:from-indigo-600 hover:to-purple-700 transition text-base"
+                      onClick={() => setApplyDialogOpen(true)}
+                    >
+                      <PersonAdd className="!text-base" /> Apply Now
+                    </button>
                       )
                   )}
                 </div>
@@ -529,11 +533,11 @@ Deadline: ${currentProject?.deadline ? format(new Date(currentProject.deadline),
                   <div className="flex flex-col items-start gap-1">
                     <span className="text-xs text-gray-500 font-medium flex items-center gap-1"><HiOutlineClipboardList className="w-4 h-4 text-indigo-600" /> Tasks</span>
                     <span className="font-semibold text-indigo-700 dark:text-indigo-200 text-base">{tasks.length}</span>
-                  </div>
+                </div>
                   <div className="flex flex-col items-start gap-1">
                     <span className="text-xs text-gray-500 font-medium flex items-center gap-1"><HiOutlineUserGroup className="w-4 h-4 text-blue-600" /> Applicants</span>
                     <span className="font-semibold text-indigo-700 dark:text-indigo-200 text-base">{projectApplications.length}</span>
-                  </div>
+                      </div>
                   {currentProject.company?.name && (
                     <div className="flex flex-col items-start gap-1">
                       <span className="text-xs text-gray-500 font-medium flex items-center gap-1"><HiOutlineOfficeBuilding className="w-4 h-4 text-indigo-700" /> Company</span>
@@ -550,7 +554,7 @@ Deadline: ${currentProject?.deadline ? format(new Date(currentProject.deadline),
                     <div className="flex flex-col items-start gap-1">
                       <span className="text-xs text-gray-500 font-medium flex items-center gap-1"><HiOutlineDocumentText className="w-4 h-4 text-indigo-500" /> Attachments</span>
                       <span className="text-indigo-700 dark:text-indigo-200 text-xs">{currentProject.files.length} file(s)</span>
-                    </div>
+                  </div>
                   )}
                 </div>
                 {/* Analytics Section - preview (moved above comments) */}
@@ -587,16 +591,21 @@ Deadline: ${currentProject?.deadline ? format(new Date(currentProject.deadline),
 
     {/* Comments Preview Card */}
     <div className="bg-white dark:bg-indigo-900 rounded-2xl shadow-md border border-indigo-100 dark:border-indigo-800 p-5 md:p-6 space-y-4 transition-all duration-300">
-      <CommentsSection 
+      <CommentSection 
         resourceType="project" 
         resourceId={projectId} 
         preview={true}
         maxComments={3}
         className="modern-comments-preview"
+        fetchComments={fetchComments}
+        addComment={addComment}
+        editComment={editComment}
+        deleteComment={deleteComment}
+        currentUser={user}
       />
-    </div>
-  </div>
-</div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           )}
@@ -657,7 +666,15 @@ Deadline: ${currentProject?.deadline ? format(new Date(currentProject.deadline),
           {/* Comments Tab */}
             {tabValue === 'comments' && (
             <div className="bg-white rounded-2xl shadow p-6">
-                <CommentsSection resourceType="project" resourceId={projectId} />
+                <CommentSection 
+                  resourceType="project" 
+                  resourceId={projectId} 
+                  fetchComments={fetchComments}
+                  addComment={addComment}
+                  editComment={editComment}
+                  deleteComment={deleteComment}
+                  currentUser={user}
+                />
             </div>
             )}
           {/* Analytics Tab */}

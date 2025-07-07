@@ -103,20 +103,26 @@ const CompanyDashboard = () => {
     console.log('CompanyDashboard useEffect - user:', user);
     if (user?.role === 'company') {
       console.log('Fetching data for company user');
-      dispatch(fetchProjects({ createdBy: user.id }));
+      dispatch(fetchProjects({ company_id: user.company_id }));
       dispatch(fetchCompanyApplications());
     } else {
       console.log('User is not a company or not authenticated:', user);
     }
   }, [dispatch, user]);
 
+  // Filter projects to only those belonging to the current company
+  const filteredProjects = Array.isArray(projects)
+    ? projects.filter(p => p.company_id && p.company_id === user.company_id && p.created_by !== null && p.created_by !== undefined && p.created_by !== 1) // Exclude admin-created (assuming admin id is 1)
+    : [];
+
+  // Update stats calculation to use filteredProjects
   useEffect(() => {
-    if (projects && companyApplications) {
-      const totalProjects = projects.length;
-      const activeProjects = projects.filter(p => p.status === 'open' || p.status === 'in-progress').length;
+    if (filteredProjects && companyApplications) {
+      const totalProjects = filteredProjects.length;
+      const activeProjects = filteredProjects.filter(p => p.status === 'open' || p.status === 'in-progress').length;
       const totalApplications = companyApplications.length;
       const pendingApplications = companyApplications.filter(app => app.status === 'pending').length;
-      const totalBudget = projects.reduce((sum, project) => sum + (project.budget || 0), 0);
+      const totalBudget = filteredProjects.reduce((sum, project) => sum + (project.budget || 0), 0);
 
       setStats({
         totalProjects,
@@ -126,7 +132,7 @@ const CompanyDashboard = () => {
         totalBudget
       });
     }
-  }, [projects, companyApplications]);
+  }, [filteredProjects, companyApplications]);
 
   const handleCreateProject = async (projectData) => {
     try {
@@ -134,7 +140,7 @@ const CompanyDashboard = () => {
       setCreateProjectDialog(false);
       toast.success('Project created successfully!');
       // Refresh data
-      dispatch(fetchProjects({ createdBy: user.id }));
+      dispatch(fetchProjects({ company_id: user.company_id }));
       dispatch(fetchCompanyApplications());
     } catch (error) {
       toast.error('Failed to create project');
@@ -147,7 +153,7 @@ const CompanyDashboard = () => {
       setEditProjectDialog({ open: false, project: null });
       toast.success('Project updated successfully!');
       // Refresh data
-      dispatch(fetchProjects({ createdBy: user.id }));
+      dispatch(fetchProjects({ company_id: user.company_id }));
       dispatch(fetchCompanyApplications());
     } catch (error) {
       toast.error('Failed to update project');
@@ -162,7 +168,7 @@ const CompanyDashboard = () => {
       setDeleteDialog({ open: false, projectId: null });
       toast.success('Project deleted successfully!');
       // Refresh data
-      dispatch(fetchProjects({ createdBy: user.id }));
+      dispatch(fetchProjects({ company_id: user.company_id }));
       dispatch(fetchCompanyApplications());
     } catch (error) {
       toast.error('Failed to delete project');
@@ -437,7 +443,7 @@ const CompanyDashboard = () => {
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    {projects.map(project => {
+                    {filteredProjects.map(project => {
                       // Get the most recent application for this project
                       const projectApps = companyApplications
                         .filter(app => app.project_id === project.id)
@@ -494,7 +500,7 @@ const CompanyDashboard = () => {
                 {/* Applications grouped by project */}
                 <div className="mt-10">
                   <h4 className="text-lg font-bold text-gray-800 mb-4">Applications by Project</h4>
-                  {projects.map(project => {
+                  {filteredProjects.map(project => {
                     const projectApps = companyApplications.filter(app => app.project_id === project.id);
                     if (projectApps.length === 0) return null;
                     return (
@@ -530,120 +536,122 @@ const CompanyDashboard = () => {
 
             {/* Projects Tab */}
             {activeTab === 1 && (
-              <div>
-                <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-xl font-semibold text-gray-900">Your Projects</h3>
-                  <Button 
-                    variant="contained" 
-                    startIcon={<Add />}
-                    onClick={() => setCreateProjectDialog(true)}
-                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                  >
-                    Create New Project
-                  </Button>
-                </div>
-
-                {projects.length === 0 ? (
-                  <div className="text-center py-12">
-                    <div className="bg-gray-50 rounded-2xl p-8 max-w-md mx-auto">
-                      <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <Assignment className="text-gray-400 text-2xl" />
-                      </div>
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">No projects yet</h3>
-                      <p className="text-gray-500 mb-6">
-                        Create your first project to start attracting freelancers.
-                      </p>
-                      <Button 
-                        variant="contained" 
-                        startIcon={<Add />}
-                        onClick={() => setCreateProjectDialog(true)}
-                        className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
-                      >
-                        Create Your First Project
-                      </Button>
-                    </div>
+              <div className="flex-1 min-h-0">
+                <div className="overflow-y-auto max-h-[70vh]">
+                  <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-xl font-semibold text-gray-900">Your Projects</h3>
+                    <Button 
+                      variant="contained" 
+                      startIcon={<Add />}
+                      onClick={() => setCreateProjectDialog(true)}
+                      className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                    >
+                      Create New Project
+                    </Button>
                   </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {projects.map((project) => (
-                      <div key={project.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-gray-100 overflow-hidden">
-                        <div className="p-6">
-                          <div className="flex justify-between items-start mb-4">
-                            <h3 className="text-lg font-semibold text-gray-900 line-clamp-2 flex-1 mr-3">
-                              {project.title}
-                            </h3>
-                            <div className="flex items-center space-x-2">
-                              <Chip 
-                                label={project.status} 
-                                size="small"
-                                color={getStatusColor(project.status)}
-                                className="text-xs"
-                              />
-                              <IconButton
-                                size="small"
-                                onClick={(e) => handleProjectMenuOpen(e, project)}
-                                className="text-gray-400 hover:text-gray-600"
-                              >
-                                <MoreVert />
-                              </IconButton>
+
+                  {filteredProjects.length === 0 ? (
+                    <div className="text-center py-12">
+                      <div className="bg-gray-50 rounded-2xl p-8 max-w-md mx-auto">
+                        <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <Assignment className="text-gray-400 text-2xl" />
+                        </div>
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">No projects yet</h3>
+                        <p className="text-gray-500 mb-6">
+                          Create your first project to start attracting freelancers.
+                        </p>
+                        <Button 
+                          variant="contained" 
+                          startIcon={<Add />}
+                          onClick={() => setCreateProjectDialog(true)}
+                          className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700"
+                        >
+                          Create Your First Project
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {filteredProjects.map((project) => (
+                        <div key={project.id} className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border border-gray-100 overflow-hidden">
+                          <div className="p-6">
+                            <div className="flex justify-between items-start mb-4">
+                              <h3 className="text-lg font-semibold text-gray-900 line-clamp-2 flex-1 mr-3">
+                                {project.title}
+                              </h3>
+                              <div className="flex items-center space-x-2">
+                                <Chip 
+                                  label={project.status} 
+                                  size="small"
+                                  color={getStatusColor(project.status)}
+                                  className="text-xs"
+                                />
+                                <IconButton
+                                  size="small"
+                                  onClick={(e) => handleProjectMenuOpen(e, project)}
+                                  className="text-gray-400 hover:text-gray-600"
+                                >
+                                  <MoreVert />
+                                </IconButton>
+                              </div>
+                            </div>
+                            
+                            <p className="text-gray-600 text-sm mb-4 line-clamp-3">
+                              {project.description?.substring(0, 120)}...
+                            </p>
+
+                            <div className="flex justify-between items-center mb-4">
+                              <span className="text-lg font-bold text-blue-600">
+                                ₹{project.budget?.toLocaleString('en-IN')}
+                              </span>
+                              <span className="text-sm text-gray-500">
+                                Due: {format(new Date(project.deadline), 'MMM dd, yyyy')}
+                              </span>
+                            </div>
+
+                            <div className="flex flex-wrap gap-2 mb-4">
+                              {project.tags?.slice(0, 3).map((tag) => (
+                                <span key={tag} className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                                  {tag}
+                                </span>
+                              ))}
+                              {project.tags?.length > 3 && (
+                                <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                                  +{project.tags.length - 3}
+                                </span>
+                              )}
                             </div>
                           </div>
-                          
-                          <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                            {project.description?.substring(0, 120)}...
-                          </p>
 
-                          <div className="flex justify-between items-center mb-4">
-                            <span className="text-lg font-bold text-blue-600">
-                              ₹{project.budget?.toLocaleString('en-IN')}
-                            </span>
-                            <span className="text-sm text-gray-500">
-                              Due: {format(new Date(project.deadline), 'MMM dd, yyyy')}
-                            </span>
-                          </div>
-
-                          <div className="flex flex-wrap gap-2 mb-4">
-                            {project.tags?.slice(0, 3).map((tag) => (
-                              <span key={tag} className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
-                                {tag}
-                              </span>
-                            ))}
-                            {project.tags?.length > 3 && (
-                              <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
-                                +{project.tags.length - 3}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="px-6 pb-6">
-                          <div className="flex space-x-2">
-                            <Button
-                              component={Link}
-                              to={`/dashboard/projects/${project.id}`}
-                              size="small"
-                              variant="outlined"
-                              startIcon={<Visibility />}
-                              className="flex-1 border-blue-500 text-blue-600 hover:bg-blue-50"
-                            >
-                              View
-                            </Button>
-                            <Button
-                              component={Link}
-                              to={`/dashboard/projects/${project.id}?tab=applications`}
-                              size="small"
-                              variant="outlined"
-                              startIcon={<People />}
-                              className="flex-1 border-green-500 text-green-600 hover:bg-green-50"
-                            >
-                              Applications
-                            </Button>
+                          <div className="px-6 pb-6">
+                            <div className="flex space-x-2">
+                              <Button
+                                component={Link}
+                                to={`/dashboard/projects/${project.id}`}
+                                size="small"
+                                variant="outlined"
+                                startIcon={<Visibility />}
+                                className="flex-1 border-blue-500 text-blue-600 hover:bg-blue-50"
+                              >
+                                View
+                              </Button>
+                              <Button
+                                component={Link}
+                                to={`/dashboard/projects/${project.id}?tab=applications`}
+                                size="small"
+                                variant="outlined"
+                                startIcon={<People />}
+                                className="flex-1 border-green-500 text-green-600 hover:bg-green-50"
+                              >
+                                Applications
+                              </Button>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             )}
 
@@ -657,25 +665,17 @@ const CompanyDashboard = () => {
                     <h4 className="text-lg font-semibold text-gray-900 mb-4">Project Status Distribution</h4>
                     <div className="space-y-4">
                       {['open', 'in-progress', 'completed', 'cancelled'].map((status) => {
-                        const count = projects.filter(p => p.status === status).length;
-                        const percentage = projects.length > 0 ? (count / projects.length) * 100 : 0;
+                        const statusCount = filteredProjects.filter(p => p.status === status).length;
+                        const percentage = filteredProjects.length > 0 ? (statusCount / filteredProjects.length) * 100 : 0;
                         return (
                           <div key={status} className="space-y-2">
-                            <div className="flex justify-between items-center">
-                              <span className="text-sm font-medium text-gray-700 capitalize">
-                                {status.replace('-', ' ')}
-                              </span>
-                              <span className="text-sm text-gray-500">
-                                {count} ({percentage.toFixed(1)}%)
-                              </span>
+                            <div className="flex justify-between text-sm font-medium">
+                              <span className="capitalize">{status.replace('-', ' ')}</span>
+                              <span>{statusCount}</span>
                             </div>
-                            <div className="w-full bg-gray-200 rounded-full h-2">
-                              <div 
-                                className={`h-2 rounded-full transition-all duration-500 ${
-                                  status === 'open' ? 'bg-green-500' :
-                                  status === 'in-progress' ? 'bg-yellow-500' :
-                                  status === 'completed' ? 'bg-blue-500' : 'bg-red-500'
-                                }`}
+                            <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                              <div
+                                className={`h-2.5 rounded-full ${status === 'open' ? 'bg-blue-500' : status === 'in-progress' ? 'bg-yellow-500' : status === 'completed' ? 'bg-green-500' : 'bg-gray-400'}`}
                                 style={{ width: `${percentage}%` }}
                               ></div>
                             </div>

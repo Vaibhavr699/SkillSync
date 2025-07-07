@@ -19,7 +19,8 @@ const {
   getTaskComments,
   addTaskComment,
   getProjectTeam,
-  testTaskCreation
+  testTaskCreation,
+  searchTasks
 } = require('../controllers/task.controller.js');
 
 const auth = require('../middleware/auth');
@@ -39,7 +40,7 @@ router.use((req, res, next) => {
 router.post('/test', auth, testTaskCreation);
 
 // Global search for tasks (no project ID required)
-// router.get('/search', auth, searchTasks); // TODO: Implement search functionality
+router.get('/search', auth, searchTasks);
 
 // ===== TASK MANAGEMENT ROUTES =====
 

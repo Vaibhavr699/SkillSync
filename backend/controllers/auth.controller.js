@@ -13,6 +13,10 @@ exports.register = async (req, res) => {
       return res.status(400).json({ message: 'Invalid role' });
     }
     
+    if (role === 'company' && (!name || name.trim() === '')) {
+      return res.status(400).json({ message: 'Company name is required for company registration.' });
+    }
+    
     const user = await registerUser(email, password, role, name);
     res.status(201).json({
       message: 'User registered successfully. Please check your email for verification.',
@@ -152,7 +156,7 @@ exports.createAdmin = async (req, res) => {
     const { email, password, name } = req.body;
     
     // Create admin user directly (no email verification required)
-    const user = await registerUser(email, password, 'admin', name, true);
+    const user = await registerUser(email, password, 'admin', name);
     
     res.status(201).json({
       message: 'Admin user created successfully',

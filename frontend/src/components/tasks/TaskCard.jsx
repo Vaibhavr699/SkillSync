@@ -399,7 +399,13 @@ const TaskCard = ({
               Uploaded Files ({taskAttachments.length})
             </Typography>
             <FileViewer
-              files={taskAttachments}
+              files={taskAttachments.map(f => ({
+                ...f,
+                filename: f.filename || f.file_name,
+                url: f.url || f.file_url,
+                size: f.size || f.file_size,
+                mimetype: f.mimetype || f.file_type,
+              }))}
               title="Task Files"
             />
           </div>

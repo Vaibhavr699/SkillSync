@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
 import { FaReply, FaEdit, FaTrash, FaPaperclip, FaDownload, FaFileImage, FaFilePdf, FaFileAlt, FaFileArchive, FaFileWord, FaFileExcel, FaFilePowerpoint, FaFileVideo, FaFileAudio } from 'react-icons/fa';
 import { toast } from 'react-toastify';
+import { useThemeContext } from '../../context/ThemeContext';
 
 // Helper to format date
 function formatDate(dateStr) {
@@ -53,6 +54,8 @@ const CommentSection = ({
   const fileInputRef = useRef();
   const [previewImg, setPreviewImg] = useState(null);
   const [deleteDialog, setDeleteDialog] = useState({ open: false, commentId: null });
+  const { mode } = useThemeContext();
+  const darkMode = mode === 'dark';
 
   // Fetch comments on mount or when resource changes
   useEffect(() => {
@@ -243,12 +246,12 @@ const CommentSection = ({
   );
 
   return (
-    <div className="w-full max-w-full px-10 mx-auto p-4 bg-white rounded shadow border border-gray-100">
+    <div className={`w-full max-w-full px-10 mx-auto p-4 rounded shadow border transition-colors duration-300 ${darkMode ? 'bg-gray-900 text-white border-gray-700' : 'bg-white text-gray-900 border-gray-100'}`}>
       <h2 className="text-lg font-bold mb-4">Comments</h2>
       {error && <div className="text-red-500 mb-2">{error}</div>}
       <form onSubmit={handleSubmit} className="mb-4 flex flex-col gap-2">
         <textarea
-          className="w-full border rounded p-2 text-sm"
+          className={`w-full border rounded p-2 text-sm ${darkMode ? 'bg-gray-800 text-white border-gray-600' : 'bg-white text-gray-900 border-gray-300'}`}
           placeholder="Add a comment..."
           value={form.content}
           onChange={handleInput}
@@ -262,10 +265,10 @@ const CommentSection = ({
           className="block text-xs"
         />
         <div className="flex gap-2">
-          <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded text-sm" disabled={loading}>
+          <button type="submit" className={`px-4 py-2 rounded text-sm ${darkMode ? 'bg-blue-700 text-white' : 'bg-blue-600 text-white'}`} disabled={loading}>
             {loading ? 'Posting...' : 'Post Comment'}
           </button>
-          <button type="button" onClick={resetForm} className="px-4 py-2 bg-gray-200 text-gray-700 rounded text-sm">Clear</button>
+          <button type="button" onClick={resetForm} className={`px-4 py-2 rounded text-sm ${darkMode ? 'bg-gray-700 text-white' : 'bg-gray-200 text-gray-700'}`}>Clear</button>
         </div>
       </form>
       <div>
@@ -275,11 +278,11 @@ const CommentSection = ({
       </div>
       {deleteDialog.open && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs flex flex-col items-center">
+          <div className={`bg-white rounded-lg shadow-lg p-6 w-full max-w-xs flex flex-col items-center ${darkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'}`}>
             <div className="mb-4 text-center">Are you sure you want to delete this comment?</div>
             <div className="flex gap-4">
               <button onClick={handleDelete} className="px-4 py-2 bg-red-600 text-white rounded">Delete</button>
-              <button onClick={() => setDeleteDialog({ open: false, commentId: null })} className="px-4 py-2 bg-gray-200 text-gray-700 rounded">Cancel</button>
+              <button onClick={() => setDeleteDialog({ open: false, commentId: null })} className={`px-4 py-2 rounded ${darkMode ? 'bg-gray-700 text-white' : 'bg-gray-200 text-gray-700'}`}>Cancel</button>
             </div>
           </div>
         </div>

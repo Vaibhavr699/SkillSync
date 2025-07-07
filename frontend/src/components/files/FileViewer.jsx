@@ -168,7 +168,7 @@ const FileViewer = ({ files = [], onDelete, readOnly = false, title = "Project F
               <div className="flex flex-wrap gap-2 mt-2 w-full">
                 {canPreviewFile && fileUrl && (
                   <button
-                    className="inline-flex items-center gap-1 px-3 py-1 text-xs rounded bg-purple-100 hover:bg-purple-200 text-purple-700 font-semibold flex-1 min-w-[110px]"
+                    className="inline-flex items-center gap-1 px-3 py-1 text-xs sm:text-sm rounded bg-purple-100 hover:bg-purple-200 text-purple-700 font-semibold flex-1 min-w-[110px] w-full sm:w-auto justify-center"
                     onClick={() => handlePreview(file)}
                   >
                     <EyeIcon className="w-4 h-4" /> Preview
@@ -176,7 +176,7 @@ const FileViewer = ({ files = [], onDelete, readOnly = false, title = "Project F
                 )}
                 {fileUrl && (
                   <button
-                    className="inline-flex items-center gap-1 px-3 py-1 text-xs rounded bg-blue-100 hover:bg-blue-200 text-blue-700 font-semibold flex-1 min-w-[110px]"
+                    className="inline-flex items-center gap-1 px-3 py-1 text-xs sm:text-sm rounded bg-blue-500 hover:bg-blue-600 text-white font-semibold flex-1 min-w-[110px] w-full sm:w-auto justify-center"
                     onClick={() => handleDownload(file)}
                   >
                     <ArrowDownTrayIcon className="w-4 h-4" /> Download
@@ -184,7 +184,7 @@ const FileViewer = ({ files = [], onDelete, readOnly = false, title = "Project F
                 )}
                 {!readOnly && onDelete && fileUrl && (
                   <button
-                    className="inline-flex items-center gap-1 px-3 py-1 text-xs rounded bg-red-100 hover:bg-red-200 text-red-700 font-semibold flex-1 min-w-[110px]"
+                    className="inline-flex items-center gap-1 px-3 py-1 text-xs sm:text-sm rounded bg-red-100 hover:bg-red-200 text-red-700 font-semibold flex-1 min-w-[110px] w-full sm:w-auto justify-center"
                     onClick={() => onDelete(file)}
                   >
                     <TrashIcon className="w-4 h-4" /> Delete

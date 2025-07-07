@@ -131,9 +131,9 @@ const CommentSection = ({
           className="w-8 h-8 rounded-full object-cover border"
         />
         <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <span className="font-semibold text-sm">{comment.author?.name || 'User'}</span>
-            <span className="text-xs text-gray-400">{formatDate(comment.createdAt)}</span>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 w-full">
+            <span className="font-semibold text-sm break-words max-w-full">{comment.author?.name || 'User'}</span>
+            <span className="hidden [@media(min-width:400px)]:inline text-[10px] sm:text-xs text-gray-400 break-words max-w-full truncate sm:whitespace-nowrap" style={{minWidth:0}}>{formatDate(comment.createdAt)}</span>
           </div>
           {editId === comment._id ? (
             <form onSubmit={handleSubmit} className="mt-1 flex flex-col gap-2">
@@ -171,7 +171,7 @@ const CommentSection = ({
                     {comment.attachments.map(file => (
                       <div
                         key={file.id || file.file_id || file.url}
-                        className={`flex flex-col items-center gap-2 p-2 rounded-xl border shadow hover:shadow-lg transition w-full max-w-full min-w-0 overflow-hidden box-border
+                        className={`flex flex-col items-center gap-1 p-1 rounded-xl border shadow hover:shadow-lg transition w-full max-w-full min-w-0 overflow-hidden box-border
                           ${darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-900'}`}
                         style={{ wordBreak: 'break-word' }}
                       >
@@ -191,7 +191,7 @@ const CommentSection = ({
                         <div className="text-xs text-gray-400">{formatFileSize(file.size)}</div>
                         <div className="flex gap-2 w-full justify-center">
                           <button
-                            className="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+                            className="px-1 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 transition"
                             onClick={() => window.open(file.url, '_blank')}
                             title="Download file"
                             type="button"
@@ -200,7 +200,7 @@ const CommentSection = ({
                           </button>
                           {file.mimetype?.startsWith('image/') && (
                             <button
-                              className="px-2 py-1 text-xs bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition"
+                              className=" py-1 text-sm bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition"
                               onClick={() => setPreviewImg(file.url)}
                               title="Preview image"
                               type="button"
@@ -237,7 +237,7 @@ const CommentSection = ({
                       />
                     ) : null}
                     <div className="text-xs text-gray-400">{formatFileSize(file.size)}</div>
-                    <div className="flex gap-2 w-full justify-center">
+                    <div className="flex gap-1 w-full justify-center">
                       <button
                         className="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 transition"
                         onClick={() => window.open(file.url, '_blank')}

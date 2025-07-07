@@ -427,7 +427,7 @@ Deadline: ${currentProject?.deadline ? format(new Date(currentProject.deadline),
       {/* Header */}
       <div className=" p-1 border-b border-gray-200 bg-white dark:bg-gray-800 flex items-center gap-2 flex-shrink-0">
         <button onClick={() => navigate(-1)} className="p-2 rounded-full hover:bg-indigo-100 text-indigo-700 transition"><ArrowBack /></button>
-        <h1 className="text-2xl font-bold text-indigo-800">{currentProject?.title || 'Project Details'}</h1>
+        <h1 className="font-bold text-lg xs:text-xl sm:text-2xl md:text-3xl lg:text-4xl break-words leading-tight mb-1 text-indigo-800 dark:text-white truncate max-w-full" style={{wordBreak: 'break-word'}}>{currentProject?.title || 'Project Details'}</h1>
       </div>
       {/* Tabs - sticky below navbar */}
       <div className="sticky top-12 z-20 bg-white dark:bg-gray-800 border-b border-indigo-200 flex flex-wrap md:flex-nowrap gap-2 flex-shrink-0 overflow-x-auto whitespace-nowrap px-2 sm:px-4">
@@ -451,7 +451,7 @@ Deadline: ${currentProject?.deadline ? format(new Date(currentProject.deadline),
               <div className="bg-white/80 dark:bg-indigo-950/80 rounded-xl p-6 md:p-10 flex flex-col gap-6 border border-indigo-100 dark:border-indigo-800">
                 {/* Title & Description */}
                 <div className="mb-2">
-                  <h2 className="font-extrabold text-3xl md:text-4xl text-indigo-900 dark:text-white flex items-center gap-3">
+                  <h2 className="font-extrabold text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-indigo-900 dark:text-white flex items-center gap-3 break-words leading-tight max-w-full" style={{wordBreak: 'break-word'}}>
                     <span>{currentProject.title}</span>
                     {currentProject.status && (
                       <span className={`inline-flex items-center gap-1 px-4 py-1 rounded-full text-xs md:text-sm font-bold shadow ml-2
@@ -464,7 +464,7 @@ Deadline: ${currentProject?.deadline ? format(new Date(currentProject.deadline),
                       </span>
                     )}
                   </h2>
-                  <p className="text-gray-600 dark:text-indigo-100 text-lg mb-2 font-medium">{currentProject.description}</p>
+                  <p className="text-gray-600 dark:text-indigo-100 text-base xs:text-lg mb-2 font-medium break-words max-w-full" style={{wordBreak: 'break-word'}}>{currentProject.description}</p>
                   {/* Apply Now button for freelancers who have not applied */}
                   {user?.role === 'freelancer' && (
                     projectApplications.some(app =>

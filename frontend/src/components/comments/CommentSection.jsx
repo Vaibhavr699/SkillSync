@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
-import { FaReply, FaEdit, FaTrash, FaPaperclip, FaDownload, FaFileImage, FaFilePdf, FaFileAlt, FaFileArchive, FaFileWord, FaFileExcel, FaFilePowerpoint, FaFileVideo, FaFileAudio } from 'react-icons/fa';
+import { FaReply, FaEdit, FaTrash, FaPaperclip, FaDownload, FaFileImage, FaFilePdf, FaFileAlt, FaFileArchive, FaFileWord, FaFileExcel, FaFilePowerpoint, FaFileVideo, FaFileAudio, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { useThemeContext } from '../../context/ThemeContext';
 
@@ -56,6 +56,7 @@ const CommentSection = ({
   const [deleteDialog, setDeleteDialog] = useState({ open: false, commentId: null });
   const { mode } = useThemeContext();
   const darkMode = mode === 'dark';
+  const [expandedAttachments, setExpandedAttachments] = useState({}); // { [commentId]: boolean }
 
   // Fetch comments on mount or when resource changes
   useEffect(() => {
@@ -115,6 +116,11 @@ const CommentSection = ({
     }
   };
 
+  // Toggle attachment dropdown for a comment
+  const toggleAttachments = (commentId) => {
+    setExpandedAttachments(prev => ({ ...prev, [commentId]: !prev[commentId] }));
+  };
+
   // Render a single comment (recursive for replies)
   const renderComment = (comment, depth = 0) => (
     <div key={comment._id} className={`pl-${depth * 4} py-2 border-l border-gray-200`}> 
@@ -150,15 +156,76 @@ const CommentSection = ({
           {comment.attachments && comment.attachments.length > 0 && (
             <div className="mt-2">
               <div className="font-semibold text-xs text-gray-500 mb-1">Attachments:</div>
-              <div className="flex flex-wrap gap-3">
+              {/* Small screens: dropdown */}
+              <div className="block sm:hidden -mx-2">
+                <button
+                  className={`flex items-center gap-2 px-2 py-1 rounded bg-indigo-100 dark:bg-gray-700 text-indigo-700 dark:text-white font-medium text-xs mb-2 focus:outline-none w-full max-w-full box-border justify-between overflow-hidden`}
+                  onClick={() => toggleAttachments(comment._id)}
+                  type="button"
+                >
+                  <span className="truncate overflow-hidden whitespace-nowrap block w-0 flex-1">Show Attachments ({comment.attachments.length})</span>
+                  {expandedAttachments[comment._id] ? <FaChevronUp /> : <FaChevronDown />}
+                </button>
+                {expandedAttachments[comment._id] && (
+                  <div className="flex flex-wrap gap-3">
+                    {comment.attachments.map(file => (
+                      <div
+                        key={file.id || file.file_id || file.url}
+                        className={`flex flex-col items-center gap-2 p-2 rounded-xl border shadow hover:shadow-lg transition w-full max-w-full min-w-0 overflow-hidden box-border
+                          ${darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-900'}`}
+                        style={{ wordBreak: 'break-word' }}
+                      >
+                        <div className="flex items-center gap-2 w-full justify-center">
+                          {getFileIcon(file)}
+                          <span className="font-medium text-xs truncate break-all" title={file.filename}>{file.filename}</span>
+                        </div>
+                        {file.mimetype?.startsWith('image/') ? (
+                          <img
+                            src={file.url}
+                            alt={file.filename}
+                            className="rounded shadow w-full h-auto object-contain max-h-28 hover:opacity-80 transition"
+                            onClick={() => setPreviewImg(file.url)}
+                            style={{ cursor: 'zoom-in' }}
+                          />
+                        ) : null}
+                        <div className="text-xs text-gray-400">{formatFileSize(file.size)}</div>
+                        <div className="flex gap-2 w-full justify-center">
+                          <button
+                            className="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+                            onClick={() => window.open(file.url, '_blank')}
+                            title="Download file"
+                            type="button"
+                          >
+                            <FaDownload className="inline mr-1" />Download
+                          </button>
+                          {file.mimetype?.startsWith('image/') && (
+                            <button
+                              className="px-2 py-1 text-xs bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition"
+                              onClick={() => setPreviewImg(file.url)}
+                              title="Preview image"
+                              type="button"
+                            >
+                              Preview
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {/* Large screens: always show */}
+              <div className="hidden sm:flex flex-wrap gap-3">
                 {comment.attachments.map(file => (
                   <div
                     key={file.id || file.file_id || file.url}
-                    className="flex flex-col items-center gap-2 p-3 bg-white rounded-xl border border-gray-200 shadow hover:shadow-lg transition max-w-xs w-full sm:w-44 cursor-pointer"
+                    className={`flex flex-col items-center gap-2 p-3 rounded-xl border shadow hover:shadow-lg transition w-full sm:w-44 max-w-full min-w-0 overflow-hidden
+                      ${darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-900'}`}
+                    style={{ wordBreak: 'break-word' }}
                   >
                     <div className="flex items-center gap-2 w-full justify-center">
                       {getFileIcon(file)}
-                      <span className="font-medium text-xs truncate" title={file.filename}>{file.filename}</span>
+                      <span className="font-medium text-xs truncate break-all" title={file.filename}>{file.filename}</span>
                     </div>
                     {file.mimetype?.startsWith('image/') ? (
                       <img
@@ -246,16 +313,18 @@ const CommentSection = ({
   );
 
   return (
-    <div className={`w-full max-w-full px-10 mx-auto p-4 rounded shadow border transition-colors duration-300 ${darkMode ? 'bg-gray-900 text-white border-gray-700' : 'bg-white text-gray-900 border-gray-100'}`}>
-      <h2 className="text-lg font-bold mb-4">Comments</h2>
+    <div className={`w-full max-w-3xl px-2 sm:px-6 mx-auto p-2 sm:p-4 rounded shadow border transition-colors duration-300 ${darkMode ? 'bg-gray-900 text-white border-gray-700' : 'bg-white text-gray-900 border-gray-100'}`}
+      style={{ minHeight: 0 }}>
+      <h2 className="text-base sm:text-lg font-bold mb-4">Comments</h2>
       {error && <div className="text-red-500 mb-2">{error}</div>}
       <form onSubmit={handleSubmit} className="mb-4 flex flex-col gap-2">
         <textarea
-          className={`w-full border rounded p-2 text-sm ${darkMode ? 'bg-gray-800 text-white border-gray-600' : 'bg-white text-gray-900 border-gray-300'}`}
+          className={`w-full border rounded p-2 text-sm ${darkMode ? 'bg-gray-800 text-white border-gray-600' : 'bg-white text-gray-900 border-gray-300'} resize-none min-h-[40px]`}
           placeholder="Add a comment..."
           value={form.content}
           onChange={handleInput}
           rows={2}
+          style={{ fontSize: '0.95rem' }}
         />
         <input
           type="file"
@@ -264,11 +333,11 @@ const CommentSection = ({
           onChange={handleFile}
           className="block text-xs"
         />
-        <div className="flex gap-2">
-          <button type="submit" className={`px-4 py-2 rounded text-sm ${darkMode ? 'bg-blue-700 text-white' : 'bg-blue-600 text-white'}`} disabled={loading}>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <button type="submit" className={`w-full sm:w-auto px-4 py-2 rounded text-sm ${darkMode ? 'bg-blue-700 text-white' : 'bg-blue-600 text-white'}`} disabled={loading}>
             {loading ? 'Posting...' : 'Post Comment'}
           </button>
-          <button type="button" onClick={resetForm} className={`px-4 py-2 rounded text-sm ${darkMode ? 'bg-gray-700 text-white' : 'bg-gray-200 text-gray-700'}`}>Clear</button>
+          <button type="button" onClick={resetForm} className={`w-full sm:w-auto px-4 py-2 rounded text-sm ${darkMode ? 'bg-gray-700 text-white' : 'bg-gray-200 text-gray-700'}`}>Clear</button>
         </div>
       </form>
       <div>

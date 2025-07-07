@@ -16,9 +16,19 @@ const ConfirmationDialog = ({
       onClose={onClose}
       aria-labelledby="alert-dialog-title"
       aria-describedby="alert-dialog-description"
+      maxWidth="md"
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: 4,
+          bgcolor: 'background.paper',
+          boxShadow: 8,
+          p: 0,
+        }
+      }}
     >
-      <DialogTitle id="alert-dialog-title">{title}</DialogTitle>
-      <DialogContent>
+      <DialogTitle id="alert-dialog-title" sx={{ textAlign: 'center', fontSize: '1.5rem', fontWeight: 700, pb: 1 }}>{title}</DialogTitle>
+      <DialogContent sx={{ p: { xs: 2, sm: 4, md: 5 } }}>
         {content ? (
           content
         ) : (
@@ -27,9 +37,9 @@ const ConfirmationDialog = ({
           </DialogContentText>
         )}
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>{cancelText}</Button>
-        <Button onClick={onConfirm} color="error" autoFocus>
+      <DialogActions sx={{ justifyContent: 'center', pb: 3, pt: 2 }}>
+        <Button onClick={onClose} variant="outlined">{cancelText}</Button>
+        <Button onClick={onConfirm} color="primary" variant="contained" autoFocus>
           {confirmText}
         </Button>
       </DialogActions>

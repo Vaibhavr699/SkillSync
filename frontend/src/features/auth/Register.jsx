@@ -76,17 +76,17 @@ const Register = () => {
   const passwordStrength = getPasswordStrength(formik.values.password);
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center overflow-y-auto bg-[url('/authbg.jpg')] bg-cover bg-center before:content-[''] before:fixed before:inset-0 before:bg-[#0a2a5c]/90 before:-z-10 dark:before:bg-[#0a2a5c]/95">
-      <div className="w-full max-w-md bg-white/95 dark:bg-indigo-950/95 rounded-3xl shadow-2xl p-8 flex flex-col items-center">
-        <img src="/logo.svg" alt="SkillSync Logo" className="w-14 h-14 mb-4" />
-        <h2 className="text-3xl font-extrabold text-[#0a2a5c] dark:text-white mb-2">Create your SkillSync account</h2>
-        <p className="text-blue-900/70 dark:text-indigo-200 mb-6 text-center">
+    <div className="fixed inset-0 min-h-screen flex items-center justify-center overflow-y-auto overflow-x-hidden bg-[url('/authbg.jpg')] bg-cover bg-center before:content-[''] before:fixed before:inset-0 before:bg-[#0a2a5c]/90 before:-z-10 dark:before:bg-[#0a2a5c]/95">
+      <div className="w-full max-w-xs sm:max-w-md md:max-w-lg bg-white/95 dark:bg-indigo-950/95 rounded-3xl shadow-2xl p-1 sm:p-4 md:p-6 flex flex-col items-center">
+        <img src="/logo.svg" alt="SkillSync Logo" className="w-14 h-14 mb-2 sm:mb-3" />
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0a2a5c] dark:text-white mb-1 text-center">Create your SkillSync account</h2>
+        <p className="text-blue-900/70 dark:text-indigo-200 mb-4 sm:mb-6 text-center text-sm sm:text-base">
           Sign up to get started and unlock your productivity.
         </p>
 
-        <form onSubmit={formik.handleSubmit} className="w-full flex flex-col gap-4">
+        <form onSubmit={formik.handleSubmit} className="w-full flex flex-col gap-1">
           <input
-            className="px-4 py-3 rounded-lg border border-blue-200 dark:border-indigo-700 focus:border-blue-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-blue-200 dark:focus:ring-indigo-700 outline-none transition-all text-base bg-blue-50 dark:bg-indigo-900 placeholder:text-blue-300 dark:placeholder:text-indigo-300 text-blue-900 dark:text-white"
+            className="px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-gray-400 dark:border-gray-500 focus:border-blue-700 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-700 dark:focus:ring-blue-400 outline-none transition-all text-sm sm:text-base bg-white dark:bg-gray-900 placeholder:text-gray-500 dark:placeholder:text-gray-400 text-gray-900 dark:text-white w-full"
             name="name"
             type="text"
             placeholder="Full Name"
@@ -96,11 +96,11 @@ const Register = () => {
             autoComplete="name"
           />
           {formik.touched.name && formik.errors.name && (
-            <span className="text-red-500 text-sm">{formik.errors.name}</span>
+            <span className="text-red-500 text-xs">{formik.errors.name}</span>
           )}
 
           <input
-            className="px-4 py-3 rounded-lg border border-blue-200 dark:border-indigo-700 focus:border-blue-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-blue-200 dark:focus:ring-indigo-700 outline-none transition-all text-base bg-blue-50 dark:bg-indigo-900 placeholder:text-blue-300 dark:placeholder:text-indigo-300 text-blue-900 dark:text-white"
+            className="px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-gray-400 dark:border-gray-500 focus:border-blue-700 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-700 dark:focus:ring-blue-400 outline-none transition-all text-sm sm:text-base bg-white dark:bg-gray-900 placeholder:text-gray-500 dark:placeholder:text-gray-400 text-gray-900 dark:text-white w-full"
             name="email"
             type="email"
             placeholder="Email address"
@@ -110,11 +110,11 @@ const Register = () => {
             autoComplete="email"
           />
           {formik.touched.email && formik.errors.email && (
-            <span className="text-red-500 text-sm">{formik.errors.email}</span>
+            <span className="text-red-500 text-xs">{formik.errors.email}</span>
           )}
 
           <input
-            className="px-4 py-3 rounded-lg border border-blue-200 dark:border-indigo-700 focus:border-blue-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-blue-200 dark:focus:ring-indigo-700 outline-none transition-all text-base bg-blue-50 dark:bg-indigo-900 placeholder:text-blue-300 dark:placeholder:text-indigo-300 text-blue-900 dark:text-white"
+            className="px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-gray-400 dark:border-gray-500 focus:border-blue-700 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-700 dark:focus:ring-blue-400 outline-none transition-all text-sm sm:text-base bg-white dark:bg-gray-900 placeholder:text-gray-500 dark:placeholder:text-gray-400 text-gray-900 dark:text-white w-full"
             name="password"
             type="password"
             placeholder="Password"
@@ -137,11 +137,11 @@ const Register = () => {
             </div>
           )}
           {formik.touched.password && formik.errors.password && (
-            <span className="text-red-500 text-sm">{formik.errors.password}</span>
+            <span className="text-red-500 text-xs">{formik.errors.password}</span>
           )}
 
           <input
-            className="px-4 py-3 rounded-lg border border-blue-200 dark:border-indigo-700 focus:border-blue-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-blue-200 dark:focus:ring-indigo-700 outline-none transition-all text-base bg-blue-50 dark:bg-indigo-900 placeholder:text-blue-300 dark:placeholder:text-indigo-300 text-blue-900 dark:text-white"
+            className="px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-gray-400 dark:border-gray-500 focus:border-blue-700 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-700 dark:focus:ring-blue-400 outline-none transition-all text-sm sm:text-base bg-white dark:bg-gray-900 placeholder:text-gray-500 dark:placeholder:text-gray-400 text-gray-900 dark:text-white w-full"
             name="confirmPassword"
             type="password"
             placeholder="Confirm Password"
@@ -151,11 +151,11 @@ const Register = () => {
             autoComplete="new-password"
           />
           {formik.touched.confirmPassword && formik.errors.confirmPassword && (
-            <span className="text-red-500 text-sm">{formik.errors.confirmPassword}</span>
+            <span className="text-red-500 text-xs">{formik.errors.confirmPassword}</span>
           )}
 
           <select
-            className="px-4 py-3 rounded-lg border border-blue-200 dark:border-indigo-700 focus:border-blue-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-blue-200 dark:focus:ring-indigo-700 outline-none transition-all text-base bg-blue-50 dark:bg-indigo-900 text-blue-900 dark:text-white"
+            className="px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-gray-400 dark:border-gray-500 focus:border-blue-700 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-700 dark:focus:ring-blue-400 outline-none transition-all text-sm sm:text-base bg-white dark:bg-gray-900 text-gray-900 dark:text-white w-full"
             name="role"
             value={formik.values.role}
             onChange={formik.handleChange}
@@ -166,19 +166,19 @@ const Register = () => {
             <option value="admin">Admin</option>
           </select>
           {formik.touched.role && formik.errors.role && (
-            <span className="text-red-500 text-sm">{formik.errors.role}</span>
+            <span className="text-red-500 text-xs">{formik.errors.role}</span>
           )}
 
           <button
             type="submit"
-            className="w-full py-3 bg-blue-600 dark:bg-indigo-700 hover:bg-blue-700 dark:hover:bg-indigo-800 text-white font-bold rounded-lg shadow-md transition-all text-lg disabled:opacity-60 disabled:cursor-not-allowed"
+            className="w-full py-2 sm:py-3 bg-blue-600 dark:bg-indigo-700 hover:bg-blue-700 dark:hover:bg-indigo-800 text-white font-bold rounded-lg shadow-md transition-all text-base disabled:opacity-60 disabled:cursor-not-allowed"
             disabled={loading || submitting}
           >
             {loading || submitting ? 'Signing up...' : 'Sign Up'}
           </button>
         </form>
 
-        <div className="mt-6 text-blue-900/70 dark:text-indigo-200 text-center">
+        <div className="mt-4 sm:mt-6 text-blue-900/70 dark:text-indigo-200 text-center text-xs sm:text-base">
           Already have an account?{' '}
           <Link to="/login" className="text-blue-500 dark:text-indigo-300 hover:underline font-semibold transition-all">
             Sign in

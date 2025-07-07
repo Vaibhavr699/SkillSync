@@ -188,8 +188,8 @@ const ProjectForm = ({
     >
       {({ values, errors, touched, handleChange, handleBlur, setFieldValue, isSubmitting }) => (
         <Form>
-          <div className="h-[70vh]">
-            <div className="p-6 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-indigo-950 dark:to-indigo-900 min-h-full min-w-[320px] min-h-[400px] max-w-full overflow-x-hidden overflow-y-auto h-full">
+          <div>
+            <div className="p-6 bg-gradient-to-br from-gray-50 to-blue-50 dark:from-indigo-950 dark:to-indigo-900 min-h-full min-w-[320px] min-h-[400px] max-w-full">
               <div className="max-w-7xl w-full mx-auto">
                 <div className="space-y-8">
                   {/* Basic Information */}

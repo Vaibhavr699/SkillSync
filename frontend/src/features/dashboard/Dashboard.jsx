@@ -138,15 +138,15 @@ const Dashboard = () => {
     <div className="min-h-screen bg-gray-50 dark:bg-indigo-950 p-6 pt-18 h-[calc(100vh-90px)] overflow-y-auto scrollbar-thin scrollbar-thumb-indigo-300 dark:scrollbar-thumb-indigo-700 scrollbar-track-transparent" style={{ marginTop: '56px' }}>
       {/* Welcome Header */}
       <div className="mb-8">
-        <div className="flex items-center gap-4 mb-4">
-          <div className={`p-4 rounded-2xl bg-gradient-to-r ${config.gradient} text-white shadow-lg dark:bg-indigo-900`}>
-            <IconComponent className="w-10 h-10" />
+        <div className="flex flex-col sm:flex-row items-center sm:items-center gap-3 sm:gap-4 mb-4 text-center sm:text-left">
+          <div className={`p-3 sm:p-4 rounded-2xl bg-gradient-to-r ${config.gradient} text-white shadow-lg dark:bg-indigo-900 mb-2 sm:mb-0`}> 
+            <IconComponent className="w-9 h-9 sm:w-10 sm:h-10" />
           </div>
           <div>
-            <h1 className="text-4xl font-bold text-gray-900 dark:text-white">
+            <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 dark:text-white">
               Welcome back, <span className={`font-extrabold ${config.accentColor} dark:text-indigo-l300`}>{fullName || 'User'}</span>
             </h1>
-            <p className="text-gray-600 dark:text-indigo-200 mt-2 text-lg">
+            <p className="text-gray-600 dark:text-indigo-200 mt-2 text-base sm:text-lg">
               {user?.role === 'company' 
                 ? 'Here\'s what\'s happening with your projects today' 
                 : 'Discover new opportunities and track your progress'

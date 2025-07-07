@@ -59,57 +59,57 @@ const Login = () => {
   });
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center overflow-y-auto bg-[url('/authbg.jpg')] bg-cover bg-center before:content-[''] before:fixed before:inset-0 before:bg-[#0a2a5c]/90 before:-z-10 dark:before:bg-[#0a2a5c]/95">
-      <div className="w-full max-w-md bg-white/95 dark:bg-indigo-950/95 rounded-3xl shadow-2xl p-8 flex flex-col items-center">
-        <img src="/logo.svg" alt="SkillSync Logo" className="w-14 h-14 mb-4" />
-        <h2 className="text-3xl font-extrabold text-[#0a2a5c] dark:text-white mb-2">Sign in to SkillSync</h2>
-        <p className="text-blue-900/70 dark:text-indigo-200 mb-6 text-center">Welcome back! Please enter your details.</p>
+    <div className="fixed inset-0 min-h-screen flex items-center justify-center overflow-y-auto overflow-x-hidden bg-[url('/authbg.jpg')] bg-cover bg-center before:content-[''] before:fixed before:inset-0 before:bg-[#0a2a5c]/90 before:-z-10 dark:before:bg-[#0a2a5c]/95">
+      <div className="w-full max-w-xs sm:max-w-md md:max-w-lg bg-white/95 dark:bg-indigo-950/95 rounded-3xl shadow-2xl p-2 sm:p-4 md:p-8 flex flex-col items-center">
+        <img src="/logo.svg" alt="SkillSync Logo" className="w-14 h-14 mb-2 sm:mb-3" />
+        <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0a2a5c] dark:text-white mb-2">Sign in to SkillSync</h2>
+        <p className="text-blue-900/70 dark:text-indigo-200 mb-4 sm:mb-6 text-center text-sm sm:text-base">Welcome back! Please enter your details.</p>
         {!otpStep ? (
-        <form onSubmit={formik.handleSubmit} className="w-full flex flex-col gap-4">
-          <input
-            className="px-4 py-3 rounded-lg border border-blue-400 dark:border-indigo-700 focus:border-blue-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-blue-300 dark:focus:ring-indigo-700 outline-none transition-all text-base bg-blue-50 dark:bg-indigo-900 placeholder:text-blue-300 dark:placeholder:text-indigo-300 text-blue-900 dark:text-white"
-            name="email"
-            type="email"
-            placeholder="Email address"
-            value={formik.values.email}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            autoComplete="email"
-          />
-          {formik.touched.email && formik.errors.email && (
-            <span className="text-red-500 text-sm">{formik.errors.email}</span>
-          )}
-          <input
-            className="px-4 py-3 rounded-lg border border-blue-200 dark:border-indigo-700 focus:border-blue-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-blue-200 dark:focus:ring-indigo-700 outline-none transition-all text-base bg-blue-50 dark:bg-indigo-900 placeholder:text-blue-300 dark:placeholder:text-indigo-300 text-blue-900 dark:text-white"
-            name="password"
-            type="password"
-            placeholder="Password"
-            value={formik.values.password}
-            onChange={formik.handleChange}
-            onBlur={formik.handleBlur}
-            autoComplete="current-password"
-          />
-          {formik.touched.password && formik.errors.password && (
-            <span className="text-red-500 text-sm">{formik.errors.password}</span>
-          )}
-          <div className="flex justify-end w-full mb-2">
-            <Link to="/forgot-password" className="text-blue-500 dark:text-indigo-300 hover:underline text-sm transition-all">
-              Forgot password?
-            </Link>
-          </div>
-          <button
-            type="submit"
-            className="w-full py-3 bg-blue-600 dark:bg-indigo-700 hover:bg-blue-700 dark:hover:bg-indigo-800 text-white font-bold rounded-lg shadow-md transition-all text-lg disabled:opacity-60 disabled:cursor-not-allowed"
-            disabled={loading}
-          >
-            {loading ? 'Signing in...' : 'Sign In'}
-          </button>
-        </form>
-        ) : (
-          <form onSubmit={handleOtpSubmit} className="w-full flex flex-col gap-4 animate-fadeIn">
-            <label className="text-blue-900 dark:text-indigo-200 font-semibold text-lg text-center">Enter the 6-digit code sent to your email</label>
+          <form onSubmit={formik.handleSubmit} className="w-full flex flex-col gap-1">
             <input
-              className="px-4 py-3 rounded-lg border border-blue-400 dark:border-indigo-700 focus:border-blue-500 dark:focus:border-indigo-400 focus:ring-2 focus:ring-blue-300 dark:focus:ring-indigo-700 outline-none transition-all text-base bg-blue-50 dark:bg-indigo-900 placeholder:text-blue-300 dark:placeholder:text-indigo-300 tracking-widest text-center font-mono text-xl text-blue-900 dark:text-white"
+              className="px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-gray-400 dark:border-gray-500 focus:border-blue-700 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-700 dark:focus:ring-blue-400 outline-none transition-all text-sm sm:text-base bg-white dark:bg-gray-900 placeholder:text-gray-500 dark:placeholder:text-gray-400 text-gray-900 dark:text-white w-full"
+              name="email"
+              type="email"
+              placeholder="Email address"
+              value={formik.values.email}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              autoComplete="email"
+            />
+            {formik.touched.email && formik.errors.email && (
+              <span className="text-red-500 text-xs sm:text-sm">{formik.errors.email}</span>
+            )}
+            <input
+              className="px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-gray-400 dark:border-gray-500 focus:border-blue-700 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-700 dark:focus:ring-blue-400 outline-none transition-all text-sm sm:text-base bg-white dark:bg-gray-900 placeholder:text-gray-500 dark:placeholder:text-gray-400 text-gray-900 dark:text-white w-full"
+              name="password"
+              type="password"
+              placeholder="Password"
+              value={formik.values.password}
+              onChange={formik.handleChange}
+              onBlur={formik.handleBlur}
+              autoComplete="current-password"
+            />
+            {formik.touched.password && formik.errors.password && (
+              <span className="text-red-500 text-xs sm:text-sm">{formik.errors.password}</span>
+            )}
+            <div className="flex justify-end w-full mb-1 sm:mb-2">
+              <Link to="/forgot-password" className="text-blue-500 dark:text-indigo-300 hover:underline text-xs sm:text-sm transition-all">
+                Forgot password?
+              </Link>
+            </div>
+            <button
+              type="submit"
+              className="w-full py-2 sm:py-3 bg-blue-600 dark:bg-indigo-700 hover:bg-blue-700 dark:hover:bg-indigo-800 text-white font-bold rounded-lg shadow-md transition-all text-base disabled:opacity-60 disabled:cursor-not-allowed"
+              disabled={loading}
+            >
+              {loading ? 'Signing in...' : 'Sign In'}
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={handleOtpSubmit} className="w-full flex flex-col gap-1 animate-fadeIn">
+            <label className="text-blue-900 dark:text-indigo-200 font-semibold text-base sm:text-lg text-center">Enter the 6-digit code sent to your email</label>
+            <input
+              className="px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-gray-400 dark:border-gray-500 focus:border-blue-700 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-700 dark:focus:ring-blue-400 outline-none transition-all text-sm sm:text-base bg-white dark:bg-gray-900 placeholder:text-gray-500 dark:placeholder:text-gray-400 text-gray-900 dark:text-white w-full"
               name="otp"
               type="text"
               placeholder="------"
@@ -121,10 +121,10 @@ const Login = () => {
               pattern="[0-9]{6}"
               maxLength={6}
             />
-            {otpError && <span className="text-red-500 text-sm text-center">{otpError}</span>}
+            {otpError && <span className="text-red-500 text-xs sm:text-sm text-center">{otpError}</span>}
             <button
               type="submit"
-              className="w-full py-3 bg-blue-600 dark:bg-indigo-700 hover:bg-blue-700 dark:hover:bg-indigo-800 text-white font-bold rounded-lg shadow-md transition-all text-lg disabled:opacity-60 disabled:cursor-not-allowed"
+              className="w-full py-2 sm:py-3 bg-blue-600 dark:bg-indigo-700 hover:bg-blue-700 dark:hover:bg-indigo-800 text-white font-bold rounded-lg shadow-md transition-all text-base disabled:opacity-60 disabled:cursor-not-allowed"
               disabled={otpLoading || otp.length !== 6}
             >
               {otpLoading ? 'Verifying...' : 'Verify Code'}
@@ -139,7 +139,7 @@ const Login = () => {
             </button>
           </form>
         )}
-        <div className="mt-6 text-blue-900/70 dark:text-indigo-200 text-center">
+        <div className="mt-4 sm:mt-6 text-blue-900/70 dark:text-indigo-200 text-center text-xs sm:text-base">
           Don't have an account?{' '}
           <Link to="/signup" className="text-blue-500 dark:text-indigo-300 hover:underline font-semibold transition-all">
             Sign up

@@ -430,7 +430,7 @@ Deadline: ${currentProject?.deadline ? format(new Date(currentProject.deadline),
         <h1 className="font-bold text-lg xs:text-xl sm:text-2xl md:text-3xl lg:text-4xl break-words leading-tight mb-1 text-indigo-800 dark:text-white truncate max-w-full" style={{wordBreak: 'break-word'}}>{currentProject?.title || 'Project Details'}</h1>
       </div>
       {/* Tabs - sticky below navbar */}
-      <div className="sticky top-12 z-20 bg-white dark:bg-gray-800 border-b border-indigo-200 flex flex-wrap md:flex-nowrap gap-2 flex-shrink-0 overflow-x-auto whitespace-nowrap px-2 sm:px-4">
+      <div className="sticky top-12 z-20 bg-white dark:bg-gray-800 border-b border-indigo-200 flex flex-wrap md:flex-nowrap gap-2 flex-shrink-0  whitespace-nowrap px-2 sm:px-4">
         {['overview', 'tasks', 'files', isOwner ? 'applications' : null].filter(Boolean).map(tab => (
           <button
             key={tab}

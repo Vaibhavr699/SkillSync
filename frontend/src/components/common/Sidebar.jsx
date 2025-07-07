@@ -114,7 +114,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
   return (
     <aside className={`
       hidden lg:block
-      top-18 left-0 h-[calc(100vh-90rem)] w-64 bg-white dark:bg-blue-800 shadow-xl transition-transform duration-300 ease-in-out
+      top-18 left-0 h-[calc(100vh-90rem)] w-64 bg-gradient-to-b from-indigo-900 via-indigo-800 to-blue-900 shadow-xl transition-transform duration-300 ease-in-out
       ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
       lg:static lg:translate-x-0 lg:transform-none lg:rounded-2xl lg:shadow-2xl lg:my-12 lg:mb-12 lg:w-64
     `}>
@@ -123,9 +123,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }) => {
         <div className="flex items-center space-x-4">
           <div className="relative">
             <img
-              src={user?.photo || `https://ui-avatars.com/api/?name=${user?.name?.charAt(0) || 'U'}&background=#1E1B4B&color=000000`}
+              src={user?.photo || `https://ui-avatars.com/api/?name=${user?.name?.charAt(0) || 'U'}&background=#1E1B4B&color=ffffff`}
               alt={user?.name}
-              className="w-16 h-16 rounded-2xl border-4 border-white/30 shadow-xl object-cover"
+              className="w-16 h-16 rounded-2xl border-4 border-white/10 shadow-xl object-cover"
             />
             <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-400 border-3 border-white rounded-full flex items-center justify-center">
               <div className="w-2 h-2 bg-white rounded-full"></div>

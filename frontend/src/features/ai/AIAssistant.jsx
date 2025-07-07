@@ -74,27 +74,27 @@ const AIAssistant = () => {
   // Floating button and panel styles
   return (
     <div
-      className="fixed z-[1200] right-6 bottom-6 flex flex-col items-end"
+      className="fixed z-[1200] right-4 sm:right-6 bottom-4 sm:bottom-6 flex flex-col items-end"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
       {/* Floating Button */}
       {!open && (
         <button
-          className={`rounded-full shadow-lg w-16 h-16 flex items-center justify-center text-3xl transition-transform duration-300 hover:scale-110 ${hovered ? 'animate-bounce' : ''} ` +
+          className={`rounded-full shadow-lg w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center text-3xl transition-transform duration-300 hover:scale-110 ${hovered ? 'animate-bounce' : ''} ` +
             (isDark
               ? 'bg-gradient-to-br from-gray-900 to-indigo-900 text-white border border-indigo-700'
               : 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white')}
           onClick={() => setOpen(true)}
           aria-label="Open AI Assistant"
         >
-          <span className="text-3xl">🤖</span>
+          <span className="text-2xl sm:text-3xl">🤖</span>
         </button>
       )}
       {/* Animated Panel */}
       <div
-        className={`transition-all duration-500 ease-in-out ${open ? 'scale-100 opacity-100 pointer-events-auto' : 'scale-95 opacity-0 pointer-events-none'} origin-bottom-right`}
-        style={{ minWidth: 340, maxWidth: 400, width: '100%' }}
+        className={`transition-all duration-500 ease-in-out ${open ? 'scale-100 opacity-100 pointer-events-auto' : 'scale-95 opacity-0 pointer-events-none'} origin-bottom-right w-full max-w-xs sm:max-w-sm md:max-w-md min-w-0`}
+        style={{ width: '100%' }}
       >
         {open && (
           <div className={`rounded-2xl shadow-2xl overflow-hidden animate-fade-in-up border ${isDark ? 'bg-gray-900 border-indigo-800' : 'bg-white border-indigo-200'}` }>
@@ -108,7 +108,7 @@ const AIAssistant = () => {
               </IconButton>
             </div>
             {/* Conversation */}
-            <div className={`p-4 h-80 overflow-y-auto ${isDark ? 'bg-gray-900' : 'bg-white'}` }>
+            <div className={`p-4 h-64 sm:h-80 min-h-[220px] sm:min-h-[320px] overflow-y-auto ${isDark ? 'bg-gray-900' : 'bg-white'}` }>
         {conversation.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center text-gray-400">
                   <SmartToy className={`text-4xl mb-2 animate-pulse ${isDark ? 'text-indigo-300' : 'text-indigo-400'}`} />

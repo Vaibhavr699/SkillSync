@@ -171,7 +171,7 @@ const NotificationsDropdown = () => {
       <button
         ref={buttonRef}
         onClick={handleToggle}
-        className="relative focus:outline-none"
+        className="relative flex items-center justify-center w-10 h-10 p-0 rounded-full focus:outline-none"
         aria-label="Notifications"
       >
         <BellIcon className="w-7 h-7 text-indigo-700 dark:text-indigo-300" />

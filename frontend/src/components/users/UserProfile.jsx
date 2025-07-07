@@ -295,7 +295,7 @@ export default function UserProfile() {
           <div className="md:col-span-2 space-y-6">
             {/* Tabs */}
             <div className="bg-white rounded-2xl shadow-lg animate-fade-in-up animate-stagger-5">
-              <div className="border-b border-gray-200 overflow-x-auto">
+              <div className="border-b border-gray-200">
                 <nav className="flex space-x-4 xs:space-x-6 sm:space-x-8 px-2 xs:px-4 sm:px-6 min-w-max">
                   {[
                     { id: 'overview', label: 'Overview', icon: HiOutlineEye },

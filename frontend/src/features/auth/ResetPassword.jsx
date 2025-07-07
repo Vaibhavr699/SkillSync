@@ -2,15 +2,6 @@ import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import {
-  TextField,
-  Button,
-  Typography,
-  Alert,
-  Box,
-  Container,
-  CircularProgress
-} from '@mui/material';
 import { resetPassword } from '../../api/auth';
 import { toast } from 'react-toastify';
 
@@ -35,124 +26,108 @@ const ResetPassword = () => {
       confirmPassword: '',
     },
     validationSchema,
-    onSubmit: async (values) => {
+    onSubmit: async (values, { setSubmitting }) => {
+      setError('');
       if (!token) {
         setError('Invalid reset token');
         toast.error('Invalid reset token. Please check your email link.', {
-          position: "top-right",
+          position: 'top-right',
           autoClose: 3456,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
         });
+        setSubmitting(false);
         return;
       }
-      
       try {
         await resetPassword({ token, password: values.password });
         setSuccess(true);
         toast.success('Password reset successfully! You can now login with your new password.', {
-          position: "top-right",
+          position: 'top-right',
           autoClose: 3456,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
         });
       } catch (err) {
         const errorMessage = err.response?.data?.message || 'Password reset failed';
         setError(errorMessage);
         toast.error(errorMessage, {
-          position: "top-right",
+          position: 'top-right',
           autoClose: 3456,
-          hideProgressBar: false,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
         });
+      } finally {
+        setSubmitting(false);
       }
     },
   });
 
   return (
-    <Container maxWidth="sm">
-      <Box
-        sx={{
-          mt: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-      >
+    <div className="fixed inset-0 min-h-screen flex items-center justify-center overflow-y-auto overflow-x-hidden bg-[url('/authbg.jpg')] bg-cover bg-center before:content-[''] before:fixed before:inset-0 before:bg-[#0a2a5c]/90 before:-z-10 dark:before:bg-[#0a2a5c]/95">
+      <div className="w-full max-w-xs sm:max-w-md md:max-w-lg bg-white/95 dark:bg-indigo-950/95 rounded-3xl shadow-2xl p-2 sm:p-4 md:p-6 flex flex-col items-center">
+        <img src="/logo.svg" alt="SkillSync Logo" className="w-14 h-14 mb-2 sm:mb-3" />
         {success ? (
           <>
-            <Typography variant="h4" gutterBottom>Password Reset Success</Typography>
-            <Alert severity="success" sx={{ mb: 2, width: '100%' }}>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0a2a5c] dark:text-white mb-2 text-center">Password Reset Success</h2>
+            <div className="w-full mb-2 text-xs sm:text-sm text-green-700 bg-green-100 dark:bg-green-900/40 rounded px-3 py-2 text-center">
               Your password has been successfully reset.
-            </Alert>
-            <Button
-              fullWidth
-              variant="contained"
+            </div>
+            <button
+              className="w-full py-2 sm:py-3 mt-2 bg-blue-600 dark:bg-indigo-700 hover:bg-blue-700 dark:hover:bg-indigo-800 text-white font-bold rounded-lg shadow-md transition-all text-base disabled:opacity-60 disabled:cursor-not-allowed"
               onClick={() => navigate('/login')}
-              sx={{ mt: 2 }}
             >
               Sign In Now
-            </Button>
+            </button>
           </>
         ) : (
           <>
-            <Typography variant="h4" gutterBottom>Reset Password</Typography>
-            {error && <Alert severity="error" sx={{ mb: 2, width: '100%' }}>{error}</Alert>}
-
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0a2a5c] dark:text-white mb-2 text-center">Reset Password</h2>
+            {error && <div className="w-full mb-2 text-xs sm:text-sm text-red-600 bg-red-100 dark:bg-red-900/40 rounded px-3 py-2 text-center">{error}</div>}
             {!token ? (
-              <Alert severity="error" sx={{ mb: 2, width: '100%' }}>
+              <div className="w-full mb-2 text-xs sm:text-sm text-red-600 bg-red-100 dark:bg-red-900/40 rounded px-3 py-2 text-center">
                 Invalid or missing reset token. Please make sure you're using the correct link from your email.
-              </Alert>
+              </div>
             ) : (
               <>
-                <Typography paragraph align="center">
+                <p className="text-center text-sm sm:text-base mb-4">
                   Please enter your new password below.
-                </Typography>
-                <Box component="form" onSubmit={formik.handleSubmit} sx={{ width: '100%' }}>
-                  <TextField
-                    fullWidth
-                    margin="normal"
+                </p>
+                <form onSubmit={formik.handleSubmit} className="w-full flex flex-col gap-1">
+                  <input
+                    className="px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-gray-400 dark:border-gray-500 focus:border-blue-700 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-700 dark:focus:ring-blue-400 outline-none transition-all text-sm sm:text-base bg-white dark:bg-gray-900 placeholder:text-gray-500 dark:placeholder:text-gray-400 text-gray-900 dark:text-white w-full"
                     name="password"
-                    label="New Password"
                     type="password"
+                    placeholder="New Password"
                     value={formik.values.password}
                     onChange={formik.handleChange}
-                    error={formik.touched.password && Boolean(formik.errors.password)}
-                    helperText={formik.touched.password && formik.errors.password}
+                    onBlur={formik.handleBlur}
+                    autoComplete="new-password"
                   />
-                  <TextField
-                    fullWidth
-                    margin="normal"
+                  {formik.touched.password && formik.errors.password && (
+                    <span className="text-red-500 text-xs">{formik.errors.password}</span>
+                  )}
+                  <input
+                    className="px-3 sm:px-4 py-2 sm:py-3 rounded-lg border border-gray-400 dark:border-gray-500 focus:border-blue-700 dark:focus:border-blue-400 focus:ring-2 focus:ring-blue-700 dark:focus:ring-blue-400 outline-none transition-all text-sm sm:text-base bg-white dark:bg-gray-900 placeholder:text-gray-500 dark:placeholder:text-gray-400 text-gray-900 dark:text-white w-full"
                     name="confirmPassword"
-                    label="Confirm New Password"
                     type="password"
+                    placeholder="Confirm New Password"
                     value={formik.values.confirmPassword}
                     onChange={formik.handleChange}
-                    error={formik.touched.confirmPassword && Boolean(formik.errors.confirmPassword)}
-                    helperText={formik.touched.confirmPassword && formik.errors.confirmPassword}
+                    onBlur={formik.handleBlur}
+                    autoComplete="new-password"
                   />
-                  <Button
+                  {formik.touched.confirmPassword && formik.errors.confirmPassword && (
+                    <span className="text-red-500 text-xs">{formik.errors.confirmPassword}</span>
+                  )}
+                  <button
                     type="submit"
-                    fullWidth
-                    variant="contained"
-                    sx={{ mt: 3, mb: 2 }}
+                    className="w-full py-2 sm:py-3 mt-2 bg-blue-600 dark:bg-indigo-700 hover:bg-blue-700 dark:hover:bg-indigo-800 text-white font-bold rounded-lg shadow-md transition-all text-base disabled:opacity-60 disabled:cursor-not-allowed"
                     disabled={formik.isSubmitting}
                   >
-                    {formik.isSubmitting ? <CircularProgress size={24} /> : 'Reset Password'}
-                  </Button>
-                </Box>
+                    {formik.isSubmitting ? 'Resetting...' : 'Reset Password'}
+                  </button>
+                </form>
               </>
             )}
           </>
         )}
-      </Box>
-    </Container>
+      </div>
+    </div>
   );
 };
 

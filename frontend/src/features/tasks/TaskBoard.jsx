@@ -46,6 +46,7 @@ import {
 import TaskCard from '../../components/tasks/TaskCard';
 import TaskFormModal from '../../components/tasks/TaskFormModal';
 import { format } from 'date-fns';
+import { useThemeContext } from '../../context/ThemeContext';
 
 const statusColumns = [
   { 
@@ -144,8 +145,6 @@ const TaskBoard = () => {
   const [selectedTask, setSelectedTask] = useState(null);
   const [activeId, setActiveId] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
-  const [autoSync, setAutoSync] = useState(true);
-  const [syncInterval, setSyncInterval] = useState(null);
   const [lastSync, setLastSync] = useState(null);
   const [syncMessage, setSyncMessage] = useState('');
   const [filters, setFilters] = useState({
@@ -154,6 +153,8 @@ const TaskBoard = () => {
     dueDate: '',
     search: '',
   });
+  const { mode } = useThemeContext();
+  const isDark = mode === 'dark';
 
   console.log('TaskBoard - projectId from useParams:', projectId);
 
@@ -190,24 +191,6 @@ const TaskBoard = () => {
       dispatch(fetchProjectTeam(projectId));
     }
   }, [projectId, fetchTasksData, dispatch]);
-
-  // Auto-sync setup
-  useEffect(() => {
-    if (autoSync && projectId) {
-      const interval = setInterval(() => {
-        fetchTasksData();
-      }, 30000); // Sync every 30 seconds
-      
-      setSyncInterval(interval);
-      
-      return () => {
-        if (interval) clearInterval(interval);
-      };
-    } else if (syncInterval) {
-      clearInterval(syncInterval);
-      setSyncInterval(null);
-    }
-  }, [autoSync, projectId, fetchTasksData]);
 
   const handleStatusChange = async (taskId, newStatus) => {
     try {
@@ -309,50 +292,47 @@ const TaskBoard = () => {
 
   return (
     <Box sx={{ p: 2 }}>
-      {/* Header with Stats */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+      {/* Header with Stats - dark theme support */}
+      <Box sx={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        mb: 3,
+        p: 2,
+        borderRadius: 3,
+        boxShadow: 3,
+        background: isDark ? 'linear-gradient(90deg, #181840 60%, #23234f 100%)' : '#fff',
+        color: isDark ? '#fff' : 'inherit',
+        border: isDark ? '1px solid #23234f' : '1px solid #e0e0e0',
+      }}>
         <Box>
-          <Typography variant="h5" gutterBottom>Project Tasks</Typography>
+          <Typography variant="h5" gutterBottom sx={{ color: isDark ? '#fff' : 'inherit' }}>Project Tasks</Typography>
           <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
-            <Chip label={`${stats.total} Total`} size="small" />
-            <Chip label={`${stats.completed} Completed`} size="small" color="success" />
+            <Chip label={`${stats.total} Total`} size="small" sx={{ bgcolor: isDark ? '#23234f' : undefined, color: isDark ? '#fff' : undefined, borderColor: isDark ? '#3f3f7f' : undefined }} />
+            <Chip label={`${stats.completed} Completed`} size="small" color="success" sx={{ bgcolor: isDark ? '#1e5631' : undefined, color: isDark ? '#fff' : undefined, borderColor: isDark ? '#3f3f7f' : undefined }} />
             {stats.overdue > 0 && (
               <Chip 
-                icon={<Warning />} 
+                icon={<Warning sx={{ color: isDark ? '#ffb300' : undefined }} />} 
                 label={`${stats.overdue} Overdue`} 
                 size="small" 
                 color="error" 
+                sx={{ bgcolor: isDark ? '#7c1c1c' : undefined, color: isDark ? '#fff' : undefined, borderColor: isDark ? '#3f3f7f' : undefined }}
               />
             )}
           </Box>
           <LinearProgress 
             variant="determinate" 
             value={stats.progress} 
-            sx={{ mt: 1, height: 6, borderRadius: 3 }}
+            sx={{ mt: 1, height: 6, borderRadius: 3, bgcolor: isDark ? '#23234f' : undefined, '& .MuiLinearProgress-bar': { backgroundColor: isDark ? '#6c63ff' : undefined } }}
           />
           {lastSync && (
-            <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+            <Typography variant="caption" sx={{ mt: 0.5, display: 'block', color: isDark ? '#bdbdbd' : 'text.secondary' }}>
               Last updated: {format(lastSync, 'HH:mm:ss')}
             </Typography>
           )}
         </Box>
         
         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-          <FormControlLabel
-            control={
-              <Switch
-                checked={autoSync}
-                onChange={(e) => setAutoSync(e.target.checked)}
-                size="small"
-              />
-            }
-            label={
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                <AutoMode fontSize="small" />
-                <Typography variant="caption">Auto Sync</Typography>
-              </Box>
-            }
-          />
           <Tooltip title="Manual Sync">
             <span>
               <IconButton onClick={handleManualSync} disabled={loading}>

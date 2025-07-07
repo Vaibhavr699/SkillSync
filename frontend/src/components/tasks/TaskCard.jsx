@@ -58,9 +58,10 @@ import {
   assignTaskToUser
 } from '../../store/slices/taskSlice';
 import FileViewer from '../files/FileViewer';
-import TaskComment from './TaskComment';
-import CommentIcon from '@mui/icons-material/Comment';
+import CommentSection from '../comments/CommentSection';
 import FileUpload from '../files/FileUpload';
+import { useThemeContext } from '../../context/ThemeContext';
+import { getComments, createComment, updateComment, deleteComment as deleteCommentApi } from '../../api/comments';
 
 const TaskCard = ({ 
   task, 
@@ -85,6 +86,8 @@ const TaskCard = ({
   const dispatch = useDispatch();
   const { attachments, comments, team } = useSelector(state => state.tasks);
   const { user } = useSelector(state => state.auth);
+  const { mode } = useThemeContext();
+  const isDark = mode === 'dark';
 
   const taskAttachments = attachments[task.project]?.[task.id] || [];
   const taskComments = comments[task.project]?.[task.id] || [];
@@ -229,7 +232,9 @@ const TaskCard = ({
         transition: 'all 0.2s ease',
         transform: isDragging ? 'rotate(5deg) scale(1.02)' : 'none',
         opacity: isDragging ? 0.8 : 1,
-        border: isOverdue ? '2px solid #f44336' : '1px solid #e0e0e0',
+        border: isOverdue ? '2px solid #f44336' : isDark ? '1px solid #23234f' : '1px solid #e0e0e0',
+        background: isDark ? '#23234f' : '#fff',
+        color: isDark ? '#fff' : 'inherit',
         '&:hover': {
           boxShadow: isDragging ? 8 : 4,
         },
@@ -242,10 +247,11 @@ const TaskCard = ({
       }}
     >
       <CardContent sx={{ p: 2 }}>
-        <Tabs value={tab} onChange={(e, v) => setTab(v)} sx={{ mb: 2 }}>
-          <Tab label="Details" />
-          <Tab label="Files" />
-          <Tab label="Comments" />
+        <Tabs value={tab} onChange={(e, v) => setTab(v)} sx={{ mb: 2, background: isDark ? '#181840' : undefined, borderRadius: 2 }}
+          TabIndicatorProps={isDark ? { style: { background: '#6c63ff' } } : {}}>
+          <Tab label="Details" sx={{ color: isDark ? '#fff' : undefined }} />
+          <Tab label="Files" sx={{ color: isDark ? '#fff' : undefined }} />
+          {/* <Tab label="Comments" sx={{ color: isDark ? '#fff' : undefined }} /> */}
         </Tabs>
         {tab === 0 && (
           <>
@@ -310,6 +316,7 @@ const TaskCard = ({
                 size="small"
                 color="primary"
                 variant="outlined"
+                sx={{ bgcolor: isDark ? '#23234f' : undefined, color: isDark ? '#fff' : undefined, borderColor: isDark ? '#3f3f7f' : undefined }}
               />
             </Box>
 
@@ -330,7 +337,7 @@ const TaskCard = ({
                 <LinearProgress 
                   variant="determinate" 
                   value={checklistProgress} 
-                  sx={{ height: 4, borderRadius: 1, mb: 0.5 }} 
+                  sx={{ height: 4, borderRadius: 1, mb: 0.5, bgcolor: isDark ? '#181840' : undefined, '& .MuiLinearProgress-bar': { backgroundColor: isDark ? '#6c63ff' : undefined } }} 
                 />
               </Box>
             )}
@@ -411,7 +418,7 @@ const TaskCard = ({
           </div>
         )}
         {tab === 2 && (
-          <TaskComment taskId={task.id} projectId={task.project} />
+          {/* Comments tab is hidden */}
         )}
       </CardContent>
 

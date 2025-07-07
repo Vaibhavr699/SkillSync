@@ -475,19 +475,19 @@ exports.uploadTaskFile = async (req, res) => {
 
     const uploadedFiles = [];
     for (const file of files) {
-      const fileUrl = file.path || file.url;
-      if (!fileUrl) {
-        console.warn('Skipping file with missing URL:', file);
-        continue;
-      }
-
-      const result = await db.query(
-        `INSERT INTO task_attachments (task_id, file_url, file_name, file_size, file_type)
+      // Insert into files table
+      const fileResult = await db.query(
+        `INSERT INTO files (filename, url, mimetype, size, uploaded_by)
          VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-        [taskId, fileUrl, file.originalname, file.size, file.mimetype]
+        [file.originalname, file.path || file.url, file.mimetype, file.size, userId]
       );
-
-      uploadedFiles.push(result.rows[0]);
+      const fileRow = fileResult.rows[0];
+      // Link to task in task_files
+      await db.query(
+        `INSERT INTO task_files (task_id, file_id) VALUES ($1, $2)`,
+        [taskId, fileRow.id]
+      );
+      uploadedFiles.push(fileRow);
     }
 
     res.status(200).json(uploadedFiles);
@@ -502,8 +502,12 @@ exports.getTaskAttachments = async (req, res) => {
   try {
     const { taskId } = req.params;
 
+    // Fetch files attached to this task via task_files join
     const result = await db.query(
-      'SELECT * FROM task_attachments WHERE task_id = $1 ORDER BY created_at DESC',
+      `SELECT f.* FROM files f
+       JOIN task_files tf ON f.id = tf.file_id
+       WHERE tf.task_id = $1
+       ORDER BY f.created_at DESC`,
       [taskId]
     );
 

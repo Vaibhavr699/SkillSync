@@ -18,6 +18,7 @@ import {
 } from '@mui/material';
 import { Send, HelpOutline, ExpandMore, ExpandLess, Close as CloseIcon, SmartToy } from '@mui/icons-material';
 import { askAI } from '../../api/ai';
+import { useThemeContext } from '../../context/ThemeContext';
 
 const AIAssistant = () => {
   const { projectId } = useParams();
@@ -27,6 +28,8 @@ const AIAssistant = () => {
   const [expandedSources, setExpandedSources] = useState({}); // {msgIdx: Set of expanded source idx}
   const [open, setOpen] = useState(false);
   const [hovered, setHovered] = useState(false);
+  const { mode } = useThemeContext();
+  const isDark = mode === 'dark';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -78,11 +81,14 @@ const AIAssistant = () => {
       {/* Floating Button */}
       {!open && (
         <button
-          className={`rounded-full shadow-lg bg-gradient-to-br from-indigo-500 to-purple-600 text-white w-16 h-16 flex items-center justify-center text-3xl transition-transform duration-300 hover:scale-110 ${hovered ? 'animate-bounce' : ''}`}
+          className={`rounded-full shadow-lg w-16 h-16 flex items-center justify-center text-3xl transition-transform duration-300 hover:scale-110 ${hovered ? 'animate-bounce' : ''} ` +
+            (isDark
+              ? 'bg-gradient-to-br from-gray-900 to-indigo-900 text-white border border-indigo-700'
+              : 'bg-gradient-to-br from-indigo-500 to-purple-600 text-white')}
           onClick={() => setOpen(true)}
           aria-label="Open AI Assistant"
         >
-          <SmartToy fontSize="inherit" />
+          <span className="text-3xl">🤖</span>
         </button>
       )}
       {/* Animated Panel */}
@@ -91,25 +97,24 @@ const AIAssistant = () => {
         style={{ minWidth: 340, maxWidth: 400, width: '100%' }}
       >
         {open && (
-          <div className="bg-white rounded-2xl shadow-2xl border border-indigo-200 overflow-hidden animate-fade-in-up">
+          <div className={`rounded-2xl shadow-2xl overflow-hidden animate-fade-in-up border ${isDark ? 'bg-gray-900 border-indigo-800' : 'bg-white border-indigo-200'}` }>
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-indigo-100 bg-gradient-to-r from-indigo-500 to-purple-600">
+            <div className={`flex items-center justify-between px-4 py-3 border-b ${isDark ? 'border-indigo-800 bg-gradient-to-r from-gray-900 to-indigo-900' : 'border-indigo-100 bg-gradient-to-r from-indigo-500 to-purple-600'}` }>
               <div className="flex items-center gap-2">
-                <SmartToy className="text-white" />
-                <span className="text-lg font-bold text-white">Project Assistant</span>
+                <span className="text-lg font-bold text-white">🤖 Project Assistant</span>
               </div>
               <IconButton size="small" onClick={() => setOpen(false)} className="text-white">
                 <CloseIcon />
-          </IconButton>
+              </IconButton>
             </div>
             {/* Conversation */}
-            <div className="p-4 h-80 overflow-y-auto bg-white">
+            <div className={`p-4 h-80 overflow-y-auto ${isDark ? 'bg-gray-900' : 'bg-white'}` }>
         {conversation.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center text-gray-400">
-                  <SmartToy className="text-4xl mb-2 text-indigo-400 animate-pulse" />
-                  <div className="font-semibold">How can I help you today?</div>
-                  <div className="text-xs mt-1 text-gray-500">
-                    Ask questions like "What are we working on this week?" or "Summarize the project status"
+                  <SmartToy className={`text-4xl mb-2 animate-pulse ${isDark ? 'text-indigo-300' : 'text-indigo-400'}`} />
+                  <div className={`font-semibold ${isDark ? 'text-indigo-100' : ''}`}>👋 Hi there! How can I help you today?</div>
+                  <div className={`text-xs mt-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                    💡 Try asking things like "What are we working on this week?" or "📊 Summarize the project status"
                   </div>
                 </div>
         ) : (
@@ -124,7 +129,7 @@ const AIAssistant = () => {
                               color={msg.role === 'user' ? 'indigo' : msg.isError ? 'error' : 'purple'}
                         sx={{ fontWeight: 'bold' }}
                       >
-                        {msg.role === 'user' ? 'You' : 'AI Assistant'}
+                        {msg.role === 'user' ? '🧑 You' : '🤖 Project Assistant'}
                       </Typography>
                     }
                     secondary={
@@ -191,20 +196,20 @@ const AIAssistant = () => {
         )}
             </div>
             {/* Input */}
-            <form onSubmit={handleSubmit} className="flex gap-2 p-4 border-t border-indigo-100 bg-gray-50">
+            <form onSubmit={handleSubmit} className={`flex gap-2 p-4 border-t ${isDark ? 'border-indigo-800 bg-gray-800' : 'border-indigo-100 bg-gray-50'}`}>
               <input
                 type="text"
-                className="flex-1 rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-          placeholder="Ask a question about the project..."
-          value={question}
+                className={`flex-1 rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-2 ${isDark ? 'bg-gray-900 text-white border-gray-700 focus:ring-indigo-700 placeholder-gray-400' : 'bg-white text-gray-900 border-gray-300 focus:ring-indigo-400 placeholder-gray-400'}`}
+                placeholder="Ask a question about the project..."
+                value={question}
                 onChange={e => setQuestion(e.target.value)}
-          disabled={isLoading}
+                disabled={isLoading}
                 autoFocus={open}
-        />
+              />
               <button
-          type="submit"
-                className={`rounded-lg px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-semibold shadow hover:from-indigo-600 hover:to-purple-700 transition disabled:opacity-50 ${!question.trim() || isLoading ? 'cursor-not-allowed' : ''}`}
-          disabled={!question.trim() || isLoading}
+                type="submit"
+                className={`rounded-lg px-4 py-2 font-semibold shadow transition disabled:opacity-50 ${isDark ? 'bg-gradient-to-r from-gray-900 to-indigo-900 text-white hover:from-indigo-800 hover:to-indigo-900' : 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white hover:from-indigo-600 hover:to-purple-700'} ${!question.trim() || isLoading ? 'cursor-not-allowed' : ''}`}
+                disabled={!question.trim() || isLoading}
               >
                 <Send fontSize="small" />
               </button>

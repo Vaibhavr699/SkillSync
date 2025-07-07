@@ -156,19 +156,19 @@ const FileViewer = ({ files = [], onDelete, readOnly = false, title = "Project F
           const fileUrl = file.url || `/uploads/${file.filename || file.name}`;
           const canPreviewFile = canPreview(file);
           return (
-            <div key={file.id || idx} className="bg-white border rounded-lg p-4 flex flex-col gap-2 shadow hover:shadow-lg transition">
-              <div className="flex items-center gap-3">
-                {getFileIcon(file)}
+            <div key={file.id || idx} className="bg-gradient-to-br from-indigo-50 to-purple-50 border-2 border-indigo-200 rounded-xl p-4 flex flex-col gap-3 shadow-lg hover:shadow-2xl transition-transform hover:scale-105 duration-200">
+              <div className="flex items-center gap-4">
+                <span className="text-3xl">{getFileIcon(file)}</span>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate">{fileName}</div>
-                  <div className="text-xs text-gray-400 truncate">{fileType}</div>
-                  {fileSize && <div className="text-xs text-gray-400">{fileSize}</div>}
+                  <div className="font-semibold text-indigo-900 truncate">{fileName}</div>
+                  <div className="text-xs text-indigo-400 truncate">{fileType}</div>
+                  {fileSize && <div className="text-xs text-indigo-400">{fileSize}</div>}
                 </div>
               </div>
               <div className="flex flex-wrap gap-2 mt-2 w-full">
                 {canPreviewFile && fileUrl && (
                   <button
-                    className="inline-flex items-center gap-1 px-3 py-1 text-xs rounded bg-gray-100 hover:bg-gray-200 text-gray-700 flex-1 min-w-[110px]"
+                    className="inline-flex items-center gap-1 px-3 py-1 text-xs rounded bg-purple-100 hover:bg-purple-200 text-purple-700 font-semibold flex-1 min-w-[110px]"
                     onClick={() => handlePreview(file)}
                   >
                     <EyeIcon className="w-4 h-4" /> Preview
@@ -176,7 +176,7 @@ const FileViewer = ({ files = [], onDelete, readOnly = false, title = "Project F
                 )}
                 {fileUrl && (
                   <button
-                    className="inline-flex items-center gap-1 px-3 py-1 text-xs rounded bg-gray-100 hover:bg-gray-200 text-gray-700 flex-1 min-w-[110px]"
+                    className="inline-flex items-center gap-1 px-3 py-1 text-xs rounded bg-blue-100 hover:bg-blue-200 text-blue-700 font-semibold flex-1 min-w-[110px]"
                     onClick={() => handleDownload(file)}
                   >
                     <ArrowDownTrayIcon className="w-4 h-4" /> Download
@@ -184,7 +184,7 @@ const FileViewer = ({ files = [], onDelete, readOnly = false, title = "Project F
                 )}
                 {!readOnly && onDelete && fileUrl && (
                   <button
-                    className="inline-flex items-center gap-1 px-3 py-1 text-xs rounded bg-red-100 hover:bg-red-200 text-red-700 flex-1 min-w-[110px]"
+                    className="inline-flex items-center gap-1 px-3 py-1 text-xs rounded bg-red-100 hover:bg-red-200 text-red-700 font-semibold flex-1 min-w-[110px]"
                     onClick={() => onDelete(file)}
                   >
                     <TrashIcon className="w-4 h-4" /> Delete

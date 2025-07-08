@@ -312,7 +312,7 @@ const FileUpload = ({
               onClick={handleSave}
               disabled={uploading}
             >
-              {uploading ? "Saving..." : "Save"}
+              {uploading ? "Saving...." : "Save"}
             </button>
           )}
         </div>

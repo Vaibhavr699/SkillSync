@@ -59,7 +59,7 @@ const TaskFormModal = ({ open, onClose, task, projectId }) => {
   const [newChecklistItem, setNewChecklistItem] = useState('');
   const [uploading, setUploading] = useState(false);
   const [localError, setLocalError] = useState('');
-  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [fieldErrors, setFieldErrors] = useState({});
 
   console.log('TaskFormModal - received projectId:', projectId);
 
@@ -91,7 +91,6 @@ const TaskFormModal = ({ open, onClose, task, projectId }) => {
     }
     setLocalError('');
     setUploading(false);
-    setSelectedFiles([]);
   }, [task, open]);
 
   useEffect(() => {
@@ -136,20 +135,24 @@ const TaskFormModal = ({ open, onClose, task, projectId }) => {
     });
   };
 
-  const handleFileChange = (e) => {
-    const files = Array.from(e.target.files);
-    setSelectedFiles(prev => [...prev, ...files]);
-  };
-
-  const handleRemoveFile = (index) => {
-    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+  const validateFields = () => {
+    const errors = {};
+    if (!form.title.trim()) errors.title = 'Task title is required.';
+    if (!form.description.trim()) errors.description = 'Description is required.';
+    if (!form.due_date) errors.due_date = 'Due date is required.';
+    return errors;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setUploading(true);
     setLocalError('');
-    
+    const errors = validateFields();
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      setUploading(false);
+      return;
+    }
     try {
       console.log('Creating task for project:', projectId);
       
@@ -165,19 +168,6 @@ const TaskFormModal = ({ open, onClose, task, projectId }) => {
       formData.append('checklist', JSON.stringify(form.checklist || []));
       formData.append('status', 'todo'); // Default status for new tasks
       
-      // Add files to form data
-      selectedFiles.forEach(file => formData.append('files', file));
-
-      console.log('Form data prepared:', {
-        title: form.title,
-        description: form.description,
-        due_date: form.due_date,
-        assigned_to: form.assigned_to,
-        checklist: form.checklist,
-        status: 'todo',
-        filesCount: selectedFiles.length
-      });
-
       if (task) {
         // Edit existing task
         const result = await dispatch(editTask({ 
@@ -248,6 +238,8 @@ const TaskFormModal = ({ open, onClose, task, projectId }) => {
               margin="normal"
               required
               placeholder="Enter task title..."
+              error={!!fieldErrors.title}
+              helperText={fieldErrors.title && <span style={{fontSize:12,color:'#d32f2f',marginTop:2,marginBottom:4,display:'block'}}>{fieldErrors.title}</span>}
             />
             
             <TextField
@@ -260,6 +252,8 @@ const TaskFormModal = ({ open, onClose, task, projectId }) => {
               multiline
               minRows={3}
               placeholder="Describe the task..."
+              error={!!fieldErrors.description}
+              helperText={fieldErrors.description && <span style={{fontSize:12,color:'#d32f2f',marginTop:2,marginBottom:4,display:'block'}}>{fieldErrors.description}</span>}
             />
           </Box>
 
@@ -324,6 +318,8 @@ const TaskFormModal = ({ open, onClose, task, projectId }) => {
                   </InputAdornment>
                 ),
               }}
+              error={!!fieldErrors.due_date}
+              helperText={fieldErrors.due_date && <span style={{fontSize:12,color:'#d32f2f',marginTop:2,marginBottom:4,display:'block'}}>{fieldErrors.due_date}</span>}
             />
           </Box>
 
@@ -397,50 +393,6 @@ const TaskFormModal = ({ open, onClose, task, projectId }) => {
                 Add
               </Button>
             </Box>
-          </Box>
-
-          {/* File Attachments */}
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="subtitle1" fontWeight="bold" sx={{ mb: 2 }}>
-              Attachments
-            </Typography>
-            
-            {selectedFiles.length > 0 && (
-              <Box sx={{ mb: 2 }}>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                  Selected Files ({selectedFiles.length}):
-                </Typography>
-                {selectedFiles.map((file, index) => (
-                  <Chip
-                    key={index}
-                    label={file.name}
-                    onDelete={() => handleRemoveFile(index)}
-                    sx={{ mr: 1, mb: 1 }}
-                    variant="outlined"
-                  />
-                ))}
-              </Box>
-            )}
-            
-            <Button
-              variant="outlined"
-              component="label"
-              startIcon={<CloudUpload />}
-              fullWidth
-              sx={{ py: 2, borderStyle: 'dashed' }}
-            >
-              <input
-                type="file"
-                multiple
-                hidden
-                onChange={handleFileChange}
-                accept="*/*"
-              />
-              {selectedFiles.length > 0 
-                ? `Add more files (${selectedFiles.length} selected)`
-                : 'Click to upload files'
-              }
-            </Button>
           </Box>
         </form>
       </DialogContent>

@@ -156,40 +156,42 @@ const FileViewer = ({ files = [], onDelete, readOnly = false, title = "Project F
           const fileUrl = file.url || `/uploads/${file.filename || file.name}`;
           const canPreviewFile = canPreview(file);
           return (
-            <div key={file.id || idx} className="bg-gradient-to-br from-indigo-50 to-purple-50 border-2 border-indigo-200 rounded-xl p-4 flex flex-col gap-3 shadow-lg hover:shadow-2xl transition-transform hover:scale-105 duration-200">
-              <div className="flex items-center gap-4">
-                <span className="text-3xl">{getFileIcon(file)}</span>
-                <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-indigo-900 truncate">{fileName}</div>
-                  <div className="text-xs text-indigo-400 truncate">{fileType}</div>
-                  {fileSize && <div className="text-xs text-indigo-400">{fileSize}</div>}
-                </div>
+            <div key={file.id || idx} className="flex flex-col sm:flex-row items-center gap-4 bg-white shadow border border-indigo-200 rounded-xl p-4 w-full min-h-[64px] max-w-2xl overflow-hidden">
+              <div className="flex-shrink-0 flex flex-col items-center justify-center w-12 h-12">
+                <span className="text-2xl">{getFileIcon(file)}</span>
+                {fileSize && <div className="text-xs text-indigo-400 mt-1">{fileSize}</div>}
               </div>
-              <div className="flex flex-wrap gap-2 mt-2 w-full">
-                {canPreviewFile && fileUrl && (
-                  <button
-                    className="inline-flex items-center gap-1 px-3 py-1 text-xs sm:text-sm rounded bg-purple-100 hover:bg-purple-200 text-purple-700 font-semibold flex-1 min-w-[110px] w-full sm:w-auto justify-center"
-                    onClick={() => handlePreview(file)}
-                  >
-                    <EyeIcon className="w-4 h-4" /> Preview
-                  </button>
-                )}
-                {fileUrl && (
-                  <button
-                    className="inline-flex items-center gap-1 px-3 py-1 text-xs sm:text-sm rounded bg-blue-500 hover:bg-blue-600 text-white font-semibold flex-1 min-w-[110px] w-full sm:w-auto justify-center"
-                    onClick={() => handleDownload(file)}
-                  >
-                    <ArrowDownTrayIcon className="w-4 h-4" /> Download
-                  </button>
-                )}
-                {!readOnly && onDelete && fileUrl && (
-                  <button
-                    className="inline-flex items-center gap-1 px-3 py-1 text-xs sm:text-sm rounded bg-red-100 hover:bg-red-200 text-red-700 font-semibold flex-1 min-w-[110px] w-full sm:w-auto justify-center"
-                    onClick={() => onDelete(file)}
-                  >
-                    <TrashIcon className="w-4 h-4" /> Delete
-                  </button>
-                )}
+              <div className="flex-1 min-w-0 w-full flex flex-col sm:flex-row sm:items-center gap-2 flex-wrap max-w-full">
+                <div className="flex-1 min-w-0 max-w-md">
+                  <div className="font-semibold text-indigo-900 truncate text-sm" title={fileName}>{fileName}</div>
+                  <div className="text-xs text-indigo-400 truncate">{fileType}</div>
+                </div>
+                <div className="flex flex-row flex-wrap gap-2 w-full sm:w-auto justify-end">
+                  {canPreviewFile && fileUrl && (
+                    <button
+                      className="inline-flex items-center gap-1 px-3 py-1 text-xs sm:text-sm rounded bg-purple-100 hover:bg-purple-200 text-purple-700 font-semibold min-w-[90px] w-full sm:w-auto justify-center"
+                      onClick={() => handlePreview(file)}
+                    >
+                      <EyeIcon className="w-4 h-4" /> Preview
+                    </button>
+                  )}
+                  {fileUrl && (
+                    <button
+                      className="inline-flex items-center gap-1 px-3 py-1 text-xs sm:text-sm rounded bg-blue-500 hover:bg-blue-600 text-white font-semibold min-w-[90px] w-full sm:w-auto justify-center"
+                      onClick={() => handleDownload(file)}
+                    >
+                      <ArrowDownTrayIcon className="w-4 h-4" /> Download
+                    </button>
+                  )}
+                  {!readOnly && onDelete && fileUrl && (
+                    <button
+                      className="inline-flex items-center gap-1 px-3 py-1 text-xs sm:text-sm rounded bg-red-100 hover:bg-red-200 text-red-700 font-semibold min-w-[90px] w-full sm:w-auto justify-center"
+                      onClick={() => onDelete(file)}
+                    >
+                      <TrashIcon className="w-4 h-4" /> Delete
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           );

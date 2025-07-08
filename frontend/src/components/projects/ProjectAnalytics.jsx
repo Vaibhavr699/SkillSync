@@ -37,7 +37,7 @@ const ProjectAnalytics = ({ project }) => {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 w-full items-stretch overflow-x-auto">
+    <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 w-full items-stretch lg:max-w-5xl mx-auto lg:flex-nowrap lg:overflow-x-visible">
       {/* Tasks per User */}
       <div className="flex-1 bg-white rounded-lg shadow p-3 sm:p-4 md:p-6 flex flex-col items-center w-full max-w-full md:max-w-md lg:max-w-xs">
         <h3 className="text-base font-bold mb-2 text-center">Tasks per User</h3>

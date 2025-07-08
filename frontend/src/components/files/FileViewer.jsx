@@ -156,7 +156,7 @@ const FileViewer = ({ files = [], onDelete, readOnly = false, title = "Project F
           const fileUrl = file.url || `/uploads/${file.filename || file.name}`;
           const canPreviewFile = canPreview(file);
           // Debug log for file info and preview eligibility
-          console.log('FileViewer file:', { file, fileName, fileType, fileUrl, canPreviewFile });
+          console.log('FileViewer file:-', { file, fileName, fileType, fileUrl, canPreviewFile });
           return (
             <div key={file.id || idx} className="flex flex-col lg:flex-row  items-center gap-2 bg-white shadow border border-indigo-200 rounded-xl p-4 w-full min-h-[14px] max-w-2xl overflow-hidden">
               <div className="flex-shrink-0 text-[10px] flex flex-col items-center sm:mt-2 justify-center w-2 h-2 lg:mr-2">

@@ -142,50 +142,54 @@ const FileViewer = ({ files = [], onDelete, readOnly = false, title = "Project F
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow p-6 border border-gray-100 dark:border-gray-700 text-gray-900 dark:text-gray-100">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow p-2 border border-gray-100 dark:border-gray-700 text-gray-900 dark:text-gray-100">
       <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
         <PaperClipIcon className="w-5 h-5 text-gray-500" />
         {title} ({files.length})
       </Typography>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="flex flex-col gap-2">
         {files.map((file, idx) => {
           const fileName = getFileName(file);
           const fileType = getFileType(file);
           const fileSize = getFileSize(file);
           const fileUrl = file.url || `/uploads/${file.filename || file.name}`;
           const canPreviewFile = canPreview(file);
+          // Debug log for file info and preview eligibility
+          console.log('FileViewer file:', { file, fileName, fileType, fileUrl, canPreviewFile });
           return (
-            <div key={file.id || idx} className="flex flex-col sm:flex-row items-center gap-4 bg-white shadow border border-indigo-200 rounded-xl p-4 w-full min-h-[64px] max-w-2xl overflow-hidden">
-              <div className="flex-shrink-0 flex flex-col items-center justify-center w-12 h-12">
-                <span className="text-2xl">{getFileIcon(file)}</span>
-                {fileSize && <div className="text-xs text-indigo-400 mt-1">{fileSize}</div>}
+            <div key={file.id || idx} className="flex flex-col lg:flex-row  items-center gap-2 bg-white shadow border border-indigo-200 rounded-xl p-4 w-full min-h-[14px] max-w-2xl overflow-hidden">
+              <div className="flex-shrink-0 text-[10px] flex flex-col items-center sm:mt-2 justify-center w-2 h-2 lg:mr-2">
+                <span className="text-base">{getFileIcon(file)}</span>
+                {fileSize && <div className="text-[10px] sm:text-[7px] text-indigo-400 mt-1 sm:mt-0">{fileSize}</div>}
               </div>
-              <div className="flex-1 min-w-0 w-full flex flex-col sm:flex-row sm:items-center gap-2 flex-wrap max-w-full">
+              <div className="flex-1 min-w-0 w-full flex flex-col items-center gap-1 flex-wrap max-w-full lg:items-start lg:justify-center">
                 <div className="flex-1 min-w-0 max-w-md">
-                  <div className="font-semibold text-indigo-900 truncate text-sm" title={fileName}>{fileName}</div>
-                  <div className="text-xs text-indigo-400 truncate">{fileType}</div>
+                  <div className="font-semibold text-indigo-900 truncate text-[8px]" title={fileName}>{fileName}</div>
+                  <div className="text-[10px] text-indigo-400 truncate">{fileType}</div>
                 </div>
-                <div className="flex flex-row flex-wrap gap-2 w-full sm:w-auto justify-end">
+                <div className="flex flex-row flex-wrap gap-2 w-full justify-end">
                   {canPreviewFile && fileUrl && (
                     <button
-                      className="inline-flex items-center gap-1 px-3 py-1 text-xs sm:text-sm rounded bg-purple-100 hover:bg-purple-200 text-purple-700 font-semibold min-w-[90px] w-full sm:w-auto justify-center"
+                      className="inline-flex items-center gap-1 px-2 py-1 text-xs sm:text-sm rounded bg-purple-100 hover:bg-purple-200 text-purple-700 font-semibold min-w-[36px] w-full justify-center"
                       onClick={() => handlePreview(file)}
                     >
-                      <EyeIcon className="w-4 h-4" /> Preview
+                      <EyeIcon className="w-3 h-3" />
+                      <span className="inline lg:hidden">Preview</span>
                     </button>
                   )}
                   {fileUrl && (
                     <button
-                      className="inline-flex items-center gap-1 px-3 py-1 text-xs sm:text-sm rounded bg-blue-500 hover:bg-blue-600 text-white font-semibold min-w-[90px] w-full sm:w-auto justify-center"
+                      className="inline-flex items-center gap-1 px-3 py-1 text-xs sm:text-sm rounded bg-blue-500 hover:bg-blue-600 text-white font-semibold min-w-[36px] w-full justify-center"
                       onClick={() => handleDownload(file)}
                     >
-                      <ArrowDownTrayIcon className="w-4 h-4" /> Download
+                      <ArrowDownTrayIcon className="w-3 h-3" />
+                      <span className="inline lg:hidden">Download</span>
                     </button>
                   )}
                   {!readOnly && onDelete && fileUrl && (
                     <button
-                      className="inline-flex items-center gap-1 px-3 py-1 text-xs sm:text-sm rounded bg-red-100 hover:bg-red-200 text-red-700 font-semibold min-w-[90px] w-full sm:w-auto justify-center"
+                      className="inline-flex items-center gap-1 px-3 py-1 text-xs sm:text-sm rounded bg-red-100 hover:bg-red-200 text-red-700 font-semibold min-w-[90px] w-full justify-center"
                       onClick={() => onDelete(file)}
                     >
                       <TrashIcon className="w-4 h-4" /> Delete
@@ -238,7 +242,7 @@ const FileViewer = ({ files = [], onDelete, readOnly = false, title = "Project F
             <Button 
               onClick={() => handleDownload(selectedFile)}
               variant="contained"
-              startIcon={<ArrowDownTrayIcon className="w-4 h-4" />}
+              startIcon={<ArrowDownTrayIcon className="w-3 h-3" />}
             >
               Download
             </Button>

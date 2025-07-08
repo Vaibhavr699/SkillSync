@@ -41,7 +41,8 @@ import {
   changeTaskStatus, 
   removeTask,
   fetchProjectTeam,
-  reorderProjectTasks
+  reorderProjectTasks,
+  fetchTaskAttachments
 } from '../../store/slices/taskSlice';
 import TaskCard from '../../components/tasks/TaskCard';
 import TaskFormModal from '../../components/tasks/TaskFormModal';
@@ -174,9 +175,14 @@ const TaskBoard = () => {
   const fetchTasksData = useCallback(async () => {
     if (projectId) {
       try {
-        await dispatch(fetchTasks({ projectId, filters }));
+        const result = await dispatch(fetchTasks({ projectId, filters }));
         setLastSync(new Date());
         setSyncMessage('Tasks updated successfully');
+        // Fetch attachments for all tasks after tasks are loaded
+        const loadedTasks = result.payload?.tasks || [];
+        loadedTasks.forEach(task => {
+          dispatch(fetchTaskAttachments({ projectId, taskId: task.id }));
+        });
       } catch (error) {
         setSyncMessage('Failed to update tasks');
       }

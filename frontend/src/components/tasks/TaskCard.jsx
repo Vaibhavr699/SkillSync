@@ -396,12 +396,15 @@ const TaskCard = ({
         )}
         {tab === 1 && (
           <div>
-            <FileUpload
-              multiple
-              resourceType="task"
-              resourceId={task.id}
-              onUploadComplete={() => dispatch(fetchTaskAttachments({ projectId: task.project, taskId: task.id }))}
-            />
+            {/* Only company or assigned member can upload files */}
+            {((user?.role === 'company') || (user && (user.id === task.assigned_to || user._id === task.assigned_to))) && (
+              <FileUpload
+                multiple
+                resourceType="task"
+                resourceId={task.id}
+                onUploadComplete={() => dispatch(fetchTaskAttachments({ projectId: task.project, taskId: task.id }))}
+              />
+            )}
             <Typography variant="subtitle1" sx={{ mt: 2, mb: 1 }}>
               Uploaded Files ({taskAttachments.length})
             </Typography>

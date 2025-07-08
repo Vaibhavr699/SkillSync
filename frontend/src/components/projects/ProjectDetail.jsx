@@ -611,7 +611,7 @@ const ProjectDetail = () => {
         {/* Tasks Tab */}
         {tabValue === 'tasks' && (
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border border-gray-200 dark:border-gray-700">
-            <div className="p-4 sm:p-6">
+            <div className="p-2 sm:p-1">
               <TaskBoard projectId={projectId} />
             </div>
           </div>
